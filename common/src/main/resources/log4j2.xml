@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" packages="net.minecrell.terminalconsole,me.vpatel.server,me.vpatel.console">
+    <Properties>
+        <Property name="console-pattern">%cyan{[%d{HH:mm:ss}]} %highlight{[%-5.5level]} %white{[%-25.25thread]} %highlight{[%-30.30c{1.}]:} %minecraftFormatting{%msg}%n</Property>
+    </Properties>
+    <Appenders>
+        <TerminalConsole name="Console">
+            <PatternLayout pattern="${sys:console-pattern}" />
+        </TerminalConsole>
+    </Appenders>
+    <Loggers>
+        <Logger name="me.vpatel" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Test"/>
+            <AppenderRef ref="Client"/>
+            <AppenderRef ref="File" level="debug"/>
+        </Logger>
+    </Loggers>
+</Configuration>

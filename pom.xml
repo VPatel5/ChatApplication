@@ -26,6 +26,29 @@
                 <artifactId>server</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <!-- Logging -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>3.0.0-beta2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>3.0.0-beta2</version>
+            </dependency>
+            <!-- Console -->
+            <dependency>
+                <groupId>net.minecrell</groupId>
+                <artifactId>terminalconsoleappender</artifactId>
+                <version>1.3.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jline</groupId>
+                <artifactId>jline-terminal-jna</artifactId>
+                <version>3.20.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
