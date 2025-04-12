@@ -37,7 +37,7 @@ public class ConvoConsole extends SimpleTerminalConsole {
     @Override
     protected LineReader buildReader(LineReaderBuilder builder)
     {
-        return super.buildReader(builder.appName("ChatApplication"));
+        return super.buildReader(builder.appName("Convo"));
     }
     @Override
     protected void shutdown() {
