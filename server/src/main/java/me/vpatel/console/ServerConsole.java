@@ -32,7 +32,6 @@ public class ServerConsole extends SimpleTerminalConsole {
 
     public void executeCommand(String s)
     {
-
     }
 
     @Override

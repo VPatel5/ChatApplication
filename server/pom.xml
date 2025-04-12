@@ -9,6 +9,11 @@
     <artifactId>server</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>me.vpatel</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -31,6 +36,12 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline-terminal-jna</artifactId>
+        </dependency>
+
+        <!-- Netty -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
         </dependency>
     </dependencies>
 
