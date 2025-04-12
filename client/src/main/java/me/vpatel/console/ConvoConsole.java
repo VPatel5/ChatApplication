@@ -1,6 +1,7 @@
 package me.vpatel.console;
 
 import me.vpatel.client.ConvoClient;
+import me.vpatel.network.protocol.client.ClientPingPacket;
 import net.minecrell.terminalconsole.SimpleTerminalConsole;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +41,14 @@ public class ConvoConsole extends SimpleTerminalConsole {
 
     public void executeCommand(String s)
     {
+        String[] args = s.split(" ");
+
+        if ("stop".equals(args[0])) {
+            shutdown();
+        } else if ("ping".equals(args[0]))
+        {
+            client.getHandler().getConnection().sendPacket(new ClientPingPacket("test ping!"));
+        }
     }
 
     @Override

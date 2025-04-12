@@ -3,6 +3,8 @@ package me.vpatel.server;
 import me.vpatel.network.ConvoConnection;
 import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacket;
+import me.vpatel.network.protocol.client.ClientPingPacket;
+import me.vpatel.network.protocol.server.ServerPongPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,6 +43,10 @@ public class ConvoServerHandler extends ConvoHandler {
 
     @Override
     public void handle(ConvoConnection connection, ConvoPacket msg) {
-
+        if (msg instanceof ClientPingPacket clientPingPacket)
+        {
+            log.info("Received ping packet from {} with payload {}", connection.getRemoteAddress(), clientPingPacket.getPayload());
+            connection.sendPacket(new ServerPongPacket(clientPingPacket.getPayload()));
+        }
     }
 }

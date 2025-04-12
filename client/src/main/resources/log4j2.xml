@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="console-pattern">%cyan{[%d{HH:mm:ss}]} %highlight{[%-5.5level]} %white{[%-25.25thread]} %highlight{[%-30.30c{1.}]:} %minecraftFormatting{%msg}%n</Property>
+        <Property name="file-pattern">[%d{HH:mm:ss}] [%-5.5level] [%-25.25thread] [%-30.30c{1.}]: %minecraftFormatting{%msg}{strip}%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${sys:console-pattern}" />
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

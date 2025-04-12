@@ -24,7 +24,7 @@ public class ConvoClient {
         ConvoClient client = new ConvoClient();
         client.init();
 
-        client.connect("localhost", 1337);
+        client.connect("localhost", 8080);
     }
 
     public void init()
@@ -62,5 +62,9 @@ public class ConvoClient {
 
     public ConvoConsole getConsole() {
         return console;
+    }
+
+    public ConvoClientHandler getHandler() {
+        return handler;
     }
 }
