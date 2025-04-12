@@ -6,9 +6,9 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ChatServerPacketLengthEncoder extends MessageToByteEncoder<ByteBuf> {
+public class ConvoPacketLengthEncoder extends MessageToByteEncoder<ByteBuf> {
 
-    private static final Logger log = LogManager.getLogger(ChatServerPacketLengthDecoder.class);
+    private static final Logger log = LogManager.getLogger(ConvoPacketLengthDecoder.class);
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out)

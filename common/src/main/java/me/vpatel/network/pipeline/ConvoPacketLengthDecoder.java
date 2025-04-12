@@ -8,9 +8,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
-public class ChatServerPacketLengthDecoder extends ByteToMessageDecoder {
+public class ConvoPacketLengthDecoder extends ByteToMessageDecoder {
 
-    private static final Logger log = LogManager.getLogger(ChatServerPacketLengthDecoder.class);
+    private static final Logger log = LogManager.getLogger(ConvoPacketLengthDecoder.class);
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
