@@ -48,7 +48,7 @@ public class ConvoConsole extends SimpleTerminalConsole {
         return super.buildReader(builder.appName("ConvoClient"));
     }
     @Override
-    protected void shutdown() {
+    public void shutdown() {
         log.info("Shutting down");
         System.exit(0);
     }

@@ -59,4 +59,8 @@ public class ConvoClient {
             group.shutdownGracefully();
         }
     }
+
+    public ConvoConsole getConsole() {
+        return console;
+    }
 }
