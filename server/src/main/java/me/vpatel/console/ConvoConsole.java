@@ -6,9 +6,9 @@ import org.apache.logging.log4j.Logger;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 
-public class ServerConsole extends SimpleTerminalConsole {
+public class ConvoConsole extends SimpleTerminalConsole {
 
-    private static final Logger log = LogManager.getLogger(ServerConsole.class);
+    private static final Logger log = LogManager.getLogger(ConvoConsole.class);
 
     @Override
     public void start() {

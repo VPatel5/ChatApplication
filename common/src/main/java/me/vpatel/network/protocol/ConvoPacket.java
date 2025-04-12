@@ -2,12 +2,12 @@ package me.vpatel.network.protocol;
 
 import io.netty.buffer.ByteBuf;
 
-public abstract class ChatServerPacket {
+public abstract class ConvoPacket {
 
     private PacketDirection direction;
     private int id;
 
-    public ChatServerPacket() {
+    public ConvoPacket() {
     }
 
     public PacketDirection getDirection() {

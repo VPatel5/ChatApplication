@@ -2,21 +2,21 @@ package me.vpatel.network;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import me.vpatel.network.protocol.ChatServerPacket;
+import me.vpatel.network.protocol.ConvoPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ChatServerChannelHandler extends SimpleChannelInboundHandler<ChatServerPacket> {
+public class ConvoChannelHandler extends SimpleChannelInboundHandler<ConvoPacket> {
 
-    private static final Logger log = LogManager.getLogger(ChatServerChannelHandler.class);
+    private static final Logger log = LogManager.getLogger(ConvoChannelHandler.class);
 
-    private ChatServerConnection connection;
+    private ConvoConnection connection;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         log.info("[+] Channel connected: {}", ctx.channel().remoteAddress());
 
-        this.connection = new ChatServerConnection(ctx);
+        this.connection = new ConvoConnection(ctx);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class ChatServerChannelHandler extends SimpleChannelInboundHandler<ChatSe
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, ChatServerPacket chatServerPacket) throws Exception {
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, ConvoPacket chatServerPacket) throws Exception {
 
     }
 }

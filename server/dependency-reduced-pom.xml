@@ -15,7 +15,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>me.vpatel.server.ChatServer</mainClass>
+              <mainClass>me.vpatel.server.Convo</mainClass>
             </manifest>
           </archive>
         </configuration>

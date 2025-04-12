@@ -3,7 +3,7 @@ package me.vpatel.network.pipeline;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import me.vpatel.network.ChatServerChannelHandler;
+import me.vpatel.network.ConvoChannelHandler;
 
 public class ChatServerPipeline extends ChannelInitializer<SocketChannel>
 {
@@ -17,6 +17,6 @@ public class ChatServerPipeline extends ChannelInitializer<SocketChannel>
         pipeline.addLast("lengthEncoder", new ChatServerPacketLengthEncoder());
         pipeline.addLast("encoder", new ChatServerPacketEncoder());
 
-        pipeline.addLast("handler", new ChatServerChannelHandler());
+        pipeline.addLast("handler", new ConvoChannelHandler());
     }
 }

@@ -2,20 +2,20 @@ package me.vpatel.network;
 
 import com.google.common.base.MoreObjects;
 import io.netty.channel.ChannelHandlerContext;
-import me.vpatel.network.protocol.ChatServerPacket;
+import me.vpatel.network.protocol.ConvoPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.SocketAddress;
 
-public class ChatServerConnection {
+public class ConvoConnection {
 
-    private static final Logger log = LogManager.getLogger(ChatServerConnection.class);
+    private static final Logger log = LogManager.getLogger(ConvoConnection.class);
 
     private final ChannelHandlerContext ctx;
 
 
-    public ChatServerConnection(ChannelHandlerContext ctx) {
+    public ConvoConnection(ChannelHandlerContext ctx) {
         this.ctx = ctx;
     }
 
@@ -23,7 +23,7 @@ public class ChatServerConnection {
         return ctx.channel().remoteAddress();
     }
 
-    public void sendPacket(ChatServerPacket packet) {
+    public void sendPacket(ConvoPacket packet) {
         ctx.channel().writeAndFlush(packet);
     }
 
