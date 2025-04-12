@@ -10,6 +10,7 @@
 
     <modules>
         <module>server</module>
+        <module>client</module>
         <module>common</module>
         <module>test</module>
     </modules>
@@ -25,6 +26,11 @@
             <dependency>
                 <groupId>me.vpatel</groupId>
                 <artifactId>server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>me.vpatel</groupId>
+                <artifactId>client</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
