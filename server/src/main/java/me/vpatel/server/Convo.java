@@ -5,7 +5,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import me.vpatel.console.ConvoConsole;
-import me.vpatel.network.pipeline.ChatServerPipeline;
+import me.vpatel.network.pipeline.ConvoPipeline;
+import me.vpatel.network.protocol.ConvoPacketRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,6 +17,7 @@ public class Convo {
     private final int port;
 
     private ConvoConsole console;
+    private ConvoPacketRegistry packetRegistry;
 
     public Convo(int port)
     {
@@ -36,6 +38,9 @@ public class Convo {
         console = new ConvoConsole();
         console.start();
 
+        log.info("Initializing");
+        this.packetRegistry = new ConvoPacketRegistry();
+
         log.info("Booting up server socket");
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -43,7 +48,7 @@ public class Convo {
             ServerBootstrap bootstrap = new ServerBootstrap()
                     .group(bossGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ChatServerPipeline());
+                    .childHandler(new ConvoPipeline(packetRegistry));
 
             bootstrap.bind(port).sync().channel().closeFuture().sync();
         } catch (InterruptedException e) {
