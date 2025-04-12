@@ -6,20 +6,23 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import me.vpatel.console.ConvoConsole;
 import me.vpatel.network.pipeline.ConvoPipeline;
+import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacketRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Convo {
+public class ConvoServer {
 
-    private static final Logger log = LogManager.getLogger(Convo.class);
+    private static final Logger log = LogManager.getLogger(ConvoServer.class);
 
     private final int port;
 
     private ConvoConsole console;
     private ConvoPacketRegistry packetRegistry;
+    private ConvoServerHandler handler;
+    private ConvoServerPacketHandler packetHandler;
 
-    public Convo(int port)
+    public ConvoServer(int port)
     {
         this.port = port;
     }
@@ -28,7 +31,7 @@ public class Convo {
     {
         log.info("Starting up chat server");
 
-        Convo chatServer = new Convo(8080);
+        ConvoServer chatServer = new ConvoServer(8080);
         chatServer.start();
     }
 
@@ -39,7 +42,13 @@ public class Convo {
         console.start();
 
         log.info("Initializing");
+        this.handler = new ConvoServerHandler(this);
+
         this.packetRegistry = new ConvoPacketRegistry();
+        this.packetRegistry.init();
+
+        this.packetHandler = new ConvoServerPacketHandler(handler);
+        this.packetHandler.init();
 
         log.info("Booting up server socket");
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -48,7 +57,7 @@ public class Convo {
             ServerBootstrap bootstrap = new ServerBootstrap()
                     .group(bossGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ConvoPipeline(packetRegistry));
+                    .childHandler(new ConvoPipeline(packetRegistry, handler, packetHandler));
 
             bootstrap.bind(port).sync().channel().closeFuture().sync();
         } catch (InterruptedException e) {

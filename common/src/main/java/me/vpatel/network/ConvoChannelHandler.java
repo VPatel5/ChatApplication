@@ -2,6 +2,7 @@ package me.vpatel.network;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,18 +12,29 @@ public class ConvoChannelHandler extends SimpleChannelInboundHandler<ConvoPacket
     private static final Logger log = LogManager.getLogger(ConvoChannelHandler.class);
 
     private ConvoConnection connection;
+    private final ConvoHandler handler;
+
+    public ConvoChannelHandler(ConvoHandler handler) {
+        this.handler = handler;
+    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         log.info("[+] Channel connected: {}", ctx.channel().remoteAddress());
 
         this.connection = new ConvoConnection(ctx);
+        if (handler != null) {
+            handler.join(connection);
+        }
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         log.info("[-] Channel disconnected: {}", ctx.channel().remoteAddress());
 
+        if (handler != null) {
+            handler.leave(connection);
+        }
         this.connection = null;
     }
 
@@ -37,6 +49,9 @@ public class ConvoChannelHandler extends SimpleChannelInboundHandler<ConvoPacket
             log.error("{}: Exception caught, closing channel.", this.connection.getRemoteAddress(), cause);
         }
 
+        if (handler != null) {
+            handler.leave(connection);
+        }
         this.connection = null;
 
         ctx.close();

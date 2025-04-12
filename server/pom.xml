@@ -57,7 +57,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>me.vpatel.server.Convo</mainClass>
+                            <mainClass>me.vpatel.server.ConvoServer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
