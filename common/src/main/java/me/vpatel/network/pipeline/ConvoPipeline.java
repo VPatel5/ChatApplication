@@ -26,7 +26,7 @@ public class ConvoPipeline extends ChannelInitializer<SocketChannel>
         ChannelPipeline pipeline = socketChannel.pipeline();
 
         pipeline.addLast("lengthDecoder", new ConvoPacketLengthDecoder());
-        //pipeline.addLast("decoder", new ChatServerPacketDecoder(packetRegistry, packetHandler));
+        pipeline.addLast("decoder", new ConvoPacketDecoder(packetRegistry, packetHandler));
 
         pipeline.addLast("lengthEncoder", new ConvoPacketLengthEncoder());
         pipeline.addLast("encoder", new ConvoPacketEncoder(packetRegistry));

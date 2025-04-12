@@ -61,4 +61,8 @@ public class ConvoChannelHandler extends SimpleChannelInboundHandler<ConvoPacket
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, ConvoPacket chatServerPacket) throws Exception {
 
     }
+
+    public ConvoConnection getConnection() {
+        return connection;
+    }
 }
