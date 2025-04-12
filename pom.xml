@@ -11,6 +11,7 @@
     <modules>
         <module>server</module>
         <module>common</module>
+        <module>test</module>
     </modules>
 
     <dependencyManagement>
@@ -24,6 +25,11 @@
             <dependency>
                 <groupId>me.vpatel</groupId>
                 <artifactId>server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>me.vpatel</groupId>
+                <artifactId>test</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
