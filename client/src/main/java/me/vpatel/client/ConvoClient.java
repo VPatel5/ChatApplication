@@ -4,12 +4,17 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import me.vpatel.client.ui.UIScreenManager;
 import me.vpatel.console.ConvoConsole;
+import me.vpatel.network.api.ConvoUser;
 import me.vpatel.network.pipeline.ConvoPipeline;
 import me.vpatel.network.protocol.ConvoPacketHandler;
 import me.vpatel.network.protocol.ConvoPacketRegistry;
+import me.vpatel.ui.LoginUI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.swing.*;
 
 public class ConvoClient {
 
@@ -19,12 +24,11 @@ public class ConvoClient {
     private ConvoClientHandler handler;
     private ConvoPacketRegistry packetRegistry;
     private ConvoPacketHandler packetHandler;
+    private ConvoUser convoUser;
 
     public static void main(String[] args) {
-        ConvoClient client = new ConvoClient();
-        client.init();
-
-        client.connect("localhost", 8080);
+        AppContext.getClient().init();
+        SwingUtilities.invokeLater(() -> UIScreenManager.showScreen(new LoginUI()));
     }
 
     public void init()
@@ -33,7 +37,7 @@ public class ConvoClient {
         this.console = new ConvoConsole(this);
         this.console.start();
 
-        this.handler = new ConvoClientHandler(this);
+        this.handler = new ConvoClientHandler();
 
         this.packetRegistry = new ConvoPacketRegistry();
         this.packetRegistry.init();
@@ -66,5 +70,13 @@ public class ConvoClient {
 
     public ConvoClientHandler getHandler() {
         return handler;
+    }
+
+    public void setUser(ConvoUser convoUser) {
+        this.convoUser = convoUser;
+    }
+
+    public ConvoUser getUser() {
+        return convoUser;
     }
 }

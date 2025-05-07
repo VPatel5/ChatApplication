@@ -2,6 +2,7 @@ package me.vpatel.network;
 
 import com.google.common.base.MoreObjects;
 import io.netty.channel.ChannelHandlerContext;
+import me.vpatel.network.api.ConvoUser;
 import me.vpatel.network.protocol.ConvoPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,6 +15,7 @@ public class ConvoConnection {
 
     private final ChannelHandlerContext ctx;
 
+    private ConvoUser user = new ConvoUser();
 
     public ConvoConnection(ChannelHandlerContext ctx) {
         this.ctx = ctx;
@@ -35,10 +37,23 @@ public class ConvoConnection {
         ctx.channel().close();
     }
 
+    public void setUser(ConvoUser user) {
+        this.user = user;
+    }
+
+    public ConvoUser getUser() {
+        return user;
+    }
+
+    public void initUser(String username) {
+        user.setName(username);
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("addr", getRemoteAddress())
+                .add("user", user)
                 .toString();
     }
 }

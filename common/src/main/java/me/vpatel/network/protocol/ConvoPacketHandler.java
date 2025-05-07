@@ -16,9 +16,7 @@ public abstract class ConvoPacketHandler {
     }
 
     public <T extends ConvoPacket> void handle(ConvoConnection connection, T packet) {
-        if (log.isDebugEnabled()) {
-            log.debug("Got packet {} by {}", packet, connection);
-        }
+        log.debug("Got packet {} by {}", packet, connection);
 
         if (handler != null) {
             try {
