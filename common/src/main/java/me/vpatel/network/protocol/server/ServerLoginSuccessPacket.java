@@ -2,7 +2,7 @@ package me.vpatel.network.protocol.server;
 
 import com.google.common.base.MoreObjects;
 import io.netty.buffer.ByteBuf;
-import me.vpatel.network.DataTypes;
+import me.vpatel.network.protocol.DataTypes;
 import me.vpatel.network.protocol.ConvoPacket;
 
 import java.util.UUID;

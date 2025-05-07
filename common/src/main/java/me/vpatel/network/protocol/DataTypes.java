@@ -1,4 +1,4 @@
-package me.vpatel.network;
+package me.vpatel.network.protocol;
 
 import io.netty.buffer.ByteBuf;
 
@@ -26,6 +26,18 @@ public class DataTypes {
         byte[] bytes = string.getBytes(CHARSET);
         buf.writeInt(bytes.length);
         buf.writeBytes(bytes);
+    }
+
+    public static byte[] readByteArray(ByteBuf buf) {
+        int len = buf.readInt();
+        byte[] data = new byte[len];
+        buf.readBytes(data);
+        return data;
+    }
+
+    public static void writeByteArray(byte[] arr, ByteBuf buf) {
+        buf.writeInt(arr.length);
+        buf.writeBytes(arr);
     }
 
 }

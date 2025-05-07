@@ -21,6 +21,7 @@ public class ConvoServer {
     private ConvoPacketRegistry packetRegistry;
     private ConvoServerHandler handler;
     private ConvoServerPacketHandler packetHandler;
+    private AuthHandler authHandler;
 
     public ConvoServer(int port)
     {
@@ -50,6 +51,8 @@ public class ConvoServer {
         this.packetHandler = new ConvoServerPacketHandler(handler);
         this.packetHandler.init();
 
+        this.authHandler = new AuthHandler(this);
+
         log.info("Booting up server socket");
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -66,6 +69,10 @@ public class ConvoServer {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
+    }
+
+    public AuthHandler getAuthHandler() {
+        return authHandler;
     }
 }
 

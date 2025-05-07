@@ -2,8 +2,10 @@ package me.vpatel.network.protocol;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import me.vpatel.network.protocol.client.ClientEncryptionResponsePacket;
 import me.vpatel.network.protocol.client.ClientLoginStartPacket;
 import me.vpatel.network.protocol.client.ClientPingPacket;
+import me.vpatel.network.protocol.server.ServerEncryptionRequestPacket;
 import me.vpatel.network.protocol.server.ServerLoginSuccessPacket;
 import me.vpatel.network.protocol.server.ServerPongPacket;
 import org.apache.logging.log4j.LogManager;
@@ -21,10 +23,12 @@ public class ConvoPacketRegistry {
         // TO SERVER
         register(PacketDirection.TO_SERVER, 0, ClientPingPacket.class);
         register(PacketDirection.TO_SERVER, 1, ClientLoginStartPacket.class);
+        register(PacketDirection.TO_SERVER, 2, ClientEncryptionResponsePacket.class);
 
         // TO CLIENT
         register(PacketDirection.TO_CLIENT, 0, ServerPongPacket.class);
         register(PacketDirection.TO_CLIENT, 1, ServerLoginSuccessPacket.class);
+        register(PacketDirection.TO_CLIENT, 2, ServerEncryptionRequestPacket.class);
     }
 
     public void register(PacketDirection direction, int packetId, Class<? extends ConvoPacket> packetClass) {

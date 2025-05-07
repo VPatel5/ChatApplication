@@ -25,6 +25,7 @@ public class ConvoClient {
     private ConvoPacketRegistry packetRegistry;
     private ConvoPacketHandler packetHandler;
     private ConvoUser convoUser;
+    private AuthHandler authHandler;
 
     public static void main(String[] args) {
         AppContext.getClient().init();
@@ -44,6 +45,10 @@ public class ConvoClient {
 
         this.packetHandler = new ConvoClientPacketHandler(handler);
         this.packetHandler.init();
+
+        this.convoUser = new ConvoUser();
+
+        this.authHandler = new AuthHandler();
     }
 
     public void connect(final String hostname, final int port) {
@@ -78,5 +83,9 @@ public class ConvoClient {
 
     public ConvoUser getUser() {
         return convoUser;
+    }
+
+    public AuthHandler getAuthHandler() {
+        return authHandler;
     }
 }

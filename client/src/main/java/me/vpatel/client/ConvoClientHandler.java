@@ -6,6 +6,7 @@ import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacket;
 import me.vpatel.network.protocol.client.ClientLoginStartPacket;
 import me.vpatel.network.protocol.client.ClientPingPacket;
+import me.vpatel.network.protocol.server.ServerEncryptionRequestPacket;
 import me.vpatel.network.protocol.server.ServerLoginSuccessPacket;
 import me.vpatel.network.protocol.server.ServerPongPacket;
 import org.apache.logging.log4j.LogManager;
@@ -37,11 +38,15 @@ public class ConvoClientHandler extends ConvoHandler {
 
     @Override
     public void handle(ConvoConnection connection, ConvoPacket msg) {
-        if (msg instanceof ServerPongPacket serverPongPacket)
+        if (msg instanceof ServerPongPacket packet)
         {
-            log.info("PONG! {}", serverPongPacket.getPayload());
+            log.info("PONG! {}", packet.getPayload());
         }
-        if (msg instanceof ServerLoginSuccessPacket packet)
+        else if (msg instanceof ServerEncryptionRequestPacket packet)
+        {
+            client.getAuthHandler().auth(packet, connection);
+        }
+        else if (msg instanceof ServerLoginSuccessPacket packet)
         {
             client.setUser(new ConvoUser(packet.getUuid(), packet.getUsername()));
             //connection.setAuthFinished(true);

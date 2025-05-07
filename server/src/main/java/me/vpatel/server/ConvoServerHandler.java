@@ -3,8 +3,10 @@ package me.vpatel.server;
 import me.vpatel.network.ConvoConnection;
 import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacket;
+import me.vpatel.network.protocol.client.ClientEncryptionResponsePacket;
 import me.vpatel.network.protocol.client.ClientLoginStartPacket;
 import me.vpatel.network.protocol.client.ClientPingPacket;
+import me.vpatel.network.protocol.server.ServerEncryptionRequestPacket;
 import me.vpatel.network.protocol.server.ServerLoginSuccessPacket;
 import me.vpatel.network.protocol.server.ServerPongPacket;
 import org.apache.logging.log4j.LogManager;
@@ -46,18 +48,11 @@ public class ConvoServerHandler extends ConvoHandler {
 
     @Override
     public void handle(ConvoConnection connection, ConvoPacket msg) {
-        if (msg instanceof ClientPingPacket clientPingPacket)
-        {
-            log.info("Received ping packet from {} with payload {}", connection.getRemoteAddress(), clientPingPacket.getPayload());
-            connection.sendPacket(new ServerPongPacket(clientPingPacket.getPayload()));
-        }
-        else if (msg instanceof ClientLoginStartPacket packet)
+        if (msg instanceof ClientLoginStartPacket packet)
         {
             String username = packet.getUsername();
-            UUID uuid = UUID.nameUUIDFromBytes(username.getBytes());
 
             log.info("Received login packet from {} with username {}", connection.getRemoteAddress(), username);
-            connection.sendPacket(new ServerLoginSuccessPacket(username, uuid));
 
             boolean foundMatch = connections.stream()
                     .filter(c -> c.getUser() != null && c.getUser().getName() != null)
@@ -68,8 +63,23 @@ public class ConvoServerHandler extends ConvoHandler {
                 connection.close("Already connected from a different connection!");
                 return;
             }
-            //connection.initUser(packet.getUsername());
-            //connection.sendPacket(new ServerEncryptionRequestPacket(server.getAuthHandler().getPublicKey(), server.getAuthHandler().genVerificationToken(packet.getUsername())));
+
+            connection.initUser(packet.getUsername());
+            connection.sendPacket(new ServerEncryptionRequestPacket(server.getAuthHandler().getPublicKey(), server.getAuthHandler().genVerificationToken(packet.getUsername())));
+        }
+        else if (msg instanceof ClientEncryptionResponsePacket) {
+            ClientEncryptionResponsePacket packet = (ClientEncryptionResponsePacket) msg;
+            server.getAuthHandler().auth(packet, connection);
+        }
+        else if (!connection.isAuthFinished()) {
+            // everything below requires auth, so stop if not authed
+            log.warn("Can't accept packet {} from {} without being logged in!", msg, connection);
+            connection.close("Sending " + msg.getClass().getName() + " without being logged in");
+        }
+        else if (msg instanceof ClientPingPacket clientPingPacket)
+        {
+            log.info("Received ping packet from {} with payload {}", connection.getRemoteAddress(), clientPingPacket.getPayload());
+            connection.sendPacket(new ServerPongPacket(clientPingPacket.getPayload()));
         }
     }
 }
