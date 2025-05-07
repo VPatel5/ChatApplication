@@ -1,6 +1,5 @@
 package me.vpatel.db;
 
-
 import me.vpatel.db.tables.UsersTable;
 import org.jdbi.v3.sqlobject.config.RegisterBeanMapper;
 import org.jdbi.v3.sqlobject.customizer.BindBean;
@@ -14,8 +13,10 @@ public interface UserDao {
     @SqlUpdate("create table if not exists convo_user(" +
             "id bigint primary key not null auto_increment," +
             "uuid varchar(36) unique," +
-            "name varchar(255) not null ," +
-            "timestamp timestamp not null " +
+            "name varchar(255) not null," +
+            "passwordHash varchar(255) not null," +
+            "salt varchar(255) not null," +
+            "timestamp timestamp not null" +
             ")")
     boolean createTable();
 
@@ -28,7 +29,8 @@ public interface UserDao {
     @SqlQuery("select * from convo_user where name = :name")
     UsersTable getByName(String name);
 
-    @SqlUpdate("insert into convo_user (uuid, name, timestamp) values (:uuid, :name, :now)")
+    @SqlUpdate("insert into convo_user (uuid, name, passwordHash, salt, timestamp) " +
+            "values (:uuid, :name, :passwordHash, :salt, :now)")
     @Timestamped
     boolean create(@BindBean UsersTable user);
 }

@@ -1,0 +1,87 @@
+package me.vpatel.api;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import me.vpatel.db.UserDao;
+import me.vpatel.db.tables.UsersTable;
+import me.vpatel.network.api.ConvoUser;
+import me.vpatel.server.ConvoServer;
+
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+public class UsersHandler {
+
+    private final ConvoServer server;
+
+    private final LoadingCache<Long, ConvoUser> cache = CacheBuilder.newBuilder()
+            .maximumSize(1000)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<Long, ConvoUser>() {
+                @Override
+                public ConvoUser load(Long id) {
+                    UsersTable table = server.getDbHandler().jdbi().withExtension(UserDao.class, handle -> handle.getById(id));
+
+                    if (table == null) {
+                        return null;
+                    }
+
+                    return table.convert();
+                }
+            });
+
+    public UsersHandler(ConvoServer server) {
+        this.server = server;
+    }
+
+    public ConvoUser createOrLoadUser(UUID id, String name) {
+        UsersTable table = server.getDbHandler().jdbi().withExtension(UserDao.class, handle -> {
+            UsersTable usersTable = handle.getByUUID(id.toString());
+            if (usersTable == null) {
+                if (!handle.create(new UsersTable(id.toString(), name))){
+                    return null;
+                }
+                usersTable = handle.getByUUID(id.toString());
+            }
+
+            return usersTable;
+        });
+
+        if (table == null) {
+            return null;
+        }
+
+        return table.convert();
+    }
+
+    public ConvoUser getUser(String name) {
+        UsersTable table = server.getDbHandler().jdbi().withExtension(UserDao.class, handle -> handle.getByName(name));
+
+        if (table == null) {
+            return null;
+        }
+
+        return table.convert();
+    }
+
+    public ConvoUser getUser(UUID id) {
+        UsersTable table = server.getDbHandler().jdbi().withExtension(UserDao.class, handle -> handle.getByUUID(id.toString()));
+
+        if (table == null) {
+            return null;
+        }
+
+        return table.convert();
+    }
+
+    public ConvoUser getOrCacheUser(long id) {
+        try {
+            return cache.get(id);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+}

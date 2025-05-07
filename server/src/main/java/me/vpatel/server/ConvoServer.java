@@ -4,6 +4,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import me.vpatel.api.UsersHandler;
 import me.vpatel.console.ConvoConsole;
 import me.vpatel.db.DBHandler;
 import me.vpatel.network.pipeline.ConvoPipeline;
@@ -31,6 +32,7 @@ public class ConvoServer {
     private ConvoServerPacketHandler packetHandler;
     private AuthHandler authHandler;
     private DBHandler dbHandler;
+    private UsersHandler usersHandler;
 
     public ConvoServer(int port)
     {
@@ -66,6 +68,8 @@ public class ConvoServer {
 
         this.authHandler = new AuthHandler(this);
 
+        usersHandler = new UsersHandler(this);
+
         log.info("Booting up server socket");
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -86,6 +90,14 @@ public class ConvoServer {
 
     public AuthHandler getAuthHandler() {
         return authHandler;
+    }
+
+    public DBHandler getDbHandler() {
+        return dbHandler;
+    }
+
+    public UsersHandler getUsersHandler() {
+        return usersHandler;
     }
 }
 

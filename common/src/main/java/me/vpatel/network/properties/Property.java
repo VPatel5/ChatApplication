@@ -23,7 +23,7 @@ public class Property<T> {
         properties = new Properties();
         String propFileLocation = System.getProperty("convo.property.location", def);
         File file = new File(propFileLocation);
-      
+
         if (file.exists() && file.canRead()) {
             FileReader reader = null;
             try {

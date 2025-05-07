@@ -5,9 +5,8 @@ import com.google.common.collect.HashBiMap;
 import me.vpatel.network.protocol.client.ClientEncryptionResponsePacket;
 import me.vpatel.network.protocol.client.ClientLoginStartPacket;
 import me.vpatel.network.protocol.client.ClientPingPacket;
-import me.vpatel.network.protocol.server.ServerEncryptionRequestPacket;
-import me.vpatel.network.protocol.server.ServerLoginSuccessPacket;
-import me.vpatel.network.protocol.server.ServerPongPacket;
+import me.vpatel.network.protocol.server.*;
+import me.vpatel.network.protocol.client.ClientRegisterRequestPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,11 +23,16 @@ public class ConvoPacketRegistry {
         register(PacketDirection.TO_SERVER, 0, ClientPingPacket.class);
         register(PacketDirection.TO_SERVER, 1, ClientLoginStartPacket.class);
         register(PacketDirection.TO_SERVER, 2, ClientEncryptionResponsePacket.class);
+        register(PacketDirection.TO_SERVER, 3, ClientRegisterRequestPacket.class);
 
         // TO CLIENT
         register(PacketDirection.TO_CLIENT, 0, ServerPongPacket.class);
         register(PacketDirection.TO_CLIENT, 1, ServerLoginSuccessPacket.class);
         register(PacketDirection.TO_CLIENT, 2, ServerEncryptionRequestPacket.class);
+        register(PacketDirection.TO_CLIENT, 3, ServerRegisterResponsePacket.class);
+        register(PacketDirection.TO_CLIENT, 4, ServerLoginFailPacket.class);
+        register(PacketDirection.TO_CLIENT, 5, ServerAuthFinishedPacket.class);
+
     }
 
     public void register(PacketDirection direction, int packetId, Class<? extends ConvoPacket> packetClass) {

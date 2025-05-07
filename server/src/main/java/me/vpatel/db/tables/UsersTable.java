@@ -12,6 +12,8 @@ public class UsersTable {
     private long id;
     private String uuid;
     private String name;
+    private String passwordHash;
+    private String salt;
     private OffsetDateTime timestamp;
 
     public UsersTable() {
@@ -67,6 +69,22 @@ public class UsersTable {
         this.timestamp = timestamp;
     }
 
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
+    }
+
+    public String getSalt() {
+        return salt;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -75,12 +93,14 @@ public class UsersTable {
         return id == that.id &&
                 Objects.equal(uuid, that.uuid) &&
                 Objects.equal(name, that.name) &&
+                Objects.equal(passwordHash, that.passwordHash) &&
+                Objects.equal(salt, that.salt) &&
                 Objects.equal(timestamp, that.timestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, uuid, name, timestamp);
+        return Objects.hashCode(id, uuid, name, passwordHash, salt, timestamp);
     }
 
     @Override
@@ -92,4 +112,5 @@ public class UsersTable {
                 .add("timestamp", timestamp)
                 .toString();
     }
+
 }

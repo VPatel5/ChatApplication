@@ -40,4 +40,11 @@ public class DataTypes {
         buf.writeBytes(arr);
     }
 
+    public static boolean readBoolean(ByteBuf buf) {
+        return buf.readByte() != 0;
+    }
+
+    public static void writeBoolean(boolean value, ByteBuf buf) {
+        buf.writeByte(value ? 1 : 0);
+    }
 }
