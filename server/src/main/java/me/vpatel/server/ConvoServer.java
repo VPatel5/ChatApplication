@@ -5,7 +5,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import me.vpatel.console.ConvoConsole;
+import me.vpatel.db.DBHandler;
 import me.vpatel.network.pipeline.ConvoPipeline;
+import me.vpatel.network.properties.Property;
 import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacketRegistry;
 import org.apache.logging.log4j.LogManager;
@@ -15,6 +17,12 @@ public class ConvoServer {
 
     private static final Logger log = LogManager.getLogger(ConvoServer.class);
 
+    public static final Property<String> DB_USER = new Property<>("db.user", String.class, "user");
+    public static final Property<String> DB_PASS = new Property<>("db.pass", String.class, "pass");
+    public static final Property<String> DB_NAME = new Property<>("db.name", String.class, "convo");
+    public static final Property<String> DB_HOST = new Property<>("db.host", String.class, "localhost");
+    public static final Property<Integer> DB_PORT = new Property<>("db.port", Integer.class, 3306);
+
     private final int port;
 
     private ConvoConsole console;
@@ -22,6 +30,7 @@ public class ConvoServer {
     private ConvoServerHandler handler;
     private ConvoServerPacketHandler packetHandler;
     private AuthHandler authHandler;
+    private DBHandler dbHandler;
 
     public ConvoServer(int port)
     {
@@ -50,6 +59,10 @@ public class ConvoServer {
 
         this.packetHandler = new ConvoServerPacketHandler(handler);
         this.packetHandler.init();
+
+        dbHandler = new DBHandler();
+        dbHandler.setup();
+        dbHandler.createTables();
 
         this.authHandler = new AuthHandler(this);
 
