@@ -142,4 +142,43 @@ public class ConvoClientHandler extends ConvoHandler {
     public ConvoConnection getConnection() {
         return connection;
     }
+
+    public List<ConvoGroup> getGroups() {
+        return groups;
+    }
+
+    public List<ConvoUser> getFriends() {
+        return friends;
+    }
+
+    public List<ConvoUser> getUsers() {
+        return users;
+    }
+
+    public List<Invite> getIncomingFriendInvites() {
+        return incomingFriendInvites;
+    }
+
+    public List<Invite> getOutgoingFriendInvites() {
+        return outgoingFriendInvites;
+    }
+
+    public Map<String, List<Invite>> getIncomingGroupInvites() {
+        return incomingGroupInvites;
+    }
+
+    public Map<String, List<Invite>> getOutgoingGroupInvites() {
+        return outgoingGroupInvites;
+    }
+
+    public Map<String, List<Message>> getMessages() {
+        return messages;
+    }
+
+    public ConvoGroup getGroup(String name) {
+        return groups.stream()
+                .filter(g -> g.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+    }
 }

@@ -4,6 +4,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import me.vpatel.client.api.ClientApi;
 import me.vpatel.client.ui.LoginUI;
 import me.vpatel.client.ui.UIScreenManager;
 import me.vpatel.console.ConvoConsole;
@@ -26,6 +27,7 @@ public class ConvoClient {
     private ConvoPacketHandler packetHandler;
     private ConvoUser convoUser;
     private AuthHandler authHandler;
+    private ClientApi clientApi;
 
     public static void main(String[] args) {
         AppContext.getClient().init();
@@ -50,6 +52,8 @@ public class ConvoClient {
         this.convoUser = new ConvoUser();
 
         this.authHandler = new AuthHandler();
+
+        this.clientApi = new ClientApi(this);
     }
 
     public void connect(final String hostname, final int port) {
@@ -88,5 +92,9 @@ public class ConvoClient {
 
     public AuthHandler getAuthHandler() {
         return authHandler;
+    }
+
+    public ClientApi getClientApi() {
+        return clientApi;
     }
 }
