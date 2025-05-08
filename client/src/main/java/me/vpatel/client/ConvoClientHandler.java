@@ -1,15 +1,13 @@
 package me.vpatel.client;
 
-import me.vpatel.client.ui.ChatUI;
 import me.vpatel.client.ui.LoginUI;
+import me.vpatel.client.ui.MainUI;
 import me.vpatel.client.ui.RegisterUI;
 import me.vpatel.client.ui.UIScreenManager;
 import me.vpatel.network.ConvoConnection;
 import me.vpatel.network.api.ConvoUser;
 import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacket;
-import me.vpatel.network.protocol.client.ClientLoginStartPacket;
-import me.vpatel.network.protocol.client.ClientPingPacket;
 import me.vpatel.network.protocol.server.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,7 +71,7 @@ public class ConvoClientHandler extends ConvoHandler {
         else if (msg instanceof ServerAuthFinishedPacket packet)
         {
             connection.setAuthFinished(true);
-            UIScreenManager.showScreen(new ChatUI());
+            UIScreenManager.showScreen(new MainUI(AppContext.getClient()));
         }
     }
 
