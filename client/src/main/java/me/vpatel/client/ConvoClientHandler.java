@@ -27,158 +27,110 @@ public class ConvoClientHandler extends ConvoHandler {
     private static final ConvoClient client = AppContext.getClient();
     private ConvoConnection connection;
 
-    private List<ConvoUser> users = new ArrayList<>();
-    private List<ConvoUser> friends = new ArrayList<>();
-    private List<ConvoGroup> groups = new ArrayList<>();
-    private List<Invite> incomingFriendInvites = new ArrayList<>();
-    private List<Invite> outgoingFriendInvites = new ArrayList<>();
-    private Map<String, List<Invite>> incomingGroupInvites = new HashMap<>();
-    private Map<String, List<Invite>> outgoingGroupInvites = new HashMap<>();
-    private Map<String, List<Message>> messages = new HashMap<>();
-
-    public ConvoClientHandler()
-    {
-
+    public ConvoClientHandler() {
     }
 
     @Override
     public void join(ConvoConnection connection) {
         this.connection = connection;
+        log.info("Joined connection: {}", connection);
     }
 
     @Override
     public void leave(ConvoConnection connection) {
         this.connection = null;
+        log.info("Connection closed: {}", connection);
         client.getConsole().shutdown();
     }
 
     @Override
     public void handle(ConvoConnection connection, ConvoPacket msg) {
-        if (msg instanceof ServerLoginFailPacket packet)
-        {
-            log.info("Logged in as failed");
-            if (UIScreenManager.getCurrentFrame() instanceof LoginUI ui)
-            {
+        log.debug("Received packet: {}", msg.getClass().getSimpleName());
+        if (msg instanceof ServerLoginFailPacket packet) {
+            log.info("Login failed: {}", packet.getMessage());
+            if (UIScreenManager.getCurrentFrame() instanceof LoginUI ui) {
                 ui.statusLabel.setText(packet.getMessage());
             }
-        }
-        else if (msg instanceof ServerLoginSuccessPacket packet)
-        {
+        } else if (msg instanceof ServerLoginSuccessPacket packet) {
             client.setUser(new ConvoUser(packet.getUuid(), packet.getUsername()));
-            log.info("Logged in as {}", client.getUser());
-        }
-        else if (msg instanceof ServerRegisterResponsePacket packet)
-        {
-            if (!packet.isSuccess())
-            {
-                if (UIScreenManager.getCurrentFrame() instanceof RegisterUI ui)
-                {
+            log.info("Login successful: {}", client.getUser());
+        } else if (msg instanceof ServerRegisterResponsePacket packet) {
+            if (packet.isSuccess()) {
+                log.info("Registration successful for user");
+            } else {
+                log.warn("Registration failed for user");
+                if (UIScreenManager.getCurrentFrame() instanceof RegisterUI ui) {
                     ui.statusLabel.setText("Error occurred registering");
                 }
             }
-        }
-        else if (msg instanceof ServerEncryptionRequestPacket packet)
-        {
+        } else if (msg instanceof ServerEncryptionRequestPacket packet) {
+            log.info("Encryption request received, proceeding with auth");
             client.getAuthHandler().auth(packet, connection);
-        }
-        else if (msg instanceof ServerAuthFinishedPacket packet)
-        {
+        } else if (msg instanceof ServerAuthFinishedPacket packet) {
+            log.info("Authentication finished successfully");
             connection.setAuthFinished(true);
             UIScreenManager.showScreen(new MainUI(AppContext.getClient()));
-        }
-        else if (!connection.isAuthFinished())
-        {
-            throw new RuntimeException("Can't accept packet " + msg + " without being logged in!");
-        }
-        else if (msg instanceof ServerPongPacket packet)
-        {
-            log.info("PONG! {}", packet.getPayload());
-        }
-        else if (msg instanceof ServerResponsePacket)
-        {
-            ServerResponsePacket packet = (ServerResponsePacket) msg;
-            log.info("Got response: {} {}", packet.getType(), packet.getMessage());
-        }
-        else if (msg instanceof ServerListResponsePacket)
-        {
-            ServerListResponsePacket packet = (ServerListResponsePacket) msg;
-
+        } else if (!connection.isAuthFinished()) {
+            String error = "Cannot accept packet " + msg + " without being logged in";
+            log.error(error);
+            throw new RuntimeException(error);
+        } else if (msg instanceof ServerPongPacket packet) {
+            log.info("PONG received: {}", packet.getPayload());
+        } else if (msg instanceof ServerResponsePacket packet) {
+            log.info("Server response [{}]: {}", packet.getType(), packet.getMessage());
+        } else if (msg instanceof ServerListResponsePacket packet) {
+            log.info("List response received: {} ({} items)", packet.getType(),
+                    packet.getInvites() != null ? packet.getInvites().size() :
+                            packet.getUsers() != null ? packet.getUsers().size() :
+                                    packet.getFriends() != null ? packet.getFriends().size() : 0);
             switch (packet.getType()) {
-                case FALCUN_USERS -> users = packet.getUsers();
-                case INCOMING_FRIEND_INVITES -> incomingFriendInvites = packet.getInvites();
-                case OUTGOING_FRIEND_INVITES -> outgoingFriendInvites = packet.getInvites();
-                case FRIENDS -> friends = packet.getFriends();
+                case CONVO_USERS -> {
+                    client.getClientApi().setUsers(packet.getUsers());
+                    log.info("Loaded {} users", packet.getUsers().size());
+                }
+                case INCOMING_FRIEND_INVITES -> {
+                    client.getClientApi().setIncomingFriendInvites(packet.getInvites());
+                    log.info("Loaded {} incoming friend invites", packet.getInvites().size());
+                }
+                case OUTGOING_FRIEND_INVITES -> {
+                    client.getClientApi().setOutgoingFriendInvites(packet.getInvites());
+                    log.info("Loaded {} outgoing friend invites", packet.getInvites().size());
+                }
+                case FRIENDS -> {
+                    client.getClientApi().setFriends(packet.getFriends());
+                    log.info("Loaded {} friends", packet.getFriends().size());
+                }
                 case INCOMING_GROUP_INVITES -> {
-                    incomingGroupInvites = new HashMap<>();
+                    Map<String, List<Invite>> map = new HashMap<>();
                     for (Invite invite : packet.getInvites()) {
-                        List<Invite> invites = incomingGroupInvites.get(invite.getGroup().getName());
-                        if (invites == null) {
-                            invites = new ArrayList<>();
-                        }
-                        invites.add(invite);
-                        incomingGroupInvites.put(invite.getGroup().getName(), invites);
+                        map.computeIfAbsent(invite.getGroup().getName(), k -> new ArrayList<>()).add(invite);
                     }
+                    client.getClientApi().setIncomingGroupInvites(map);
+                    log.info("Loaded incoming group invites for {} groups", map.size());
                 }
                 case OUTGOING_GROUP_INVITES -> {
-                    outgoingGroupInvites = new HashMap<>();
+                    Map<String, List<Invite>> map = new HashMap<>();
                     for (Invite invite : packet.getInvites()) {
-                        List<Invite> invites = outgoingGroupInvites.get(invite.getGroup().getName());
-                        if (invites == null) {
-                            invites = new ArrayList<>();
-                        }
-                        invites.add(invite);
-                        outgoingGroupInvites.put(invite.getGroup().getName(), invites);
+                        map.computeIfAbsent(invite.getGroup().getName(), k -> new ArrayList<>()).add(invite);
                     }
+                    client.getClientApi().setOutgoingGroupInvites(map);
+                    log.info("Loaded outgoing group invites for {} groups", map.size());
                 }
                 case MESSAGES -> {
-                    this.messages.put(packet.getGroupName(), packet.getMessages());
-                    log.info("Got {} messages for group {}", packet.getMessages().size(), packet.getGroupName());
+                    client.getClientApi().getMessages().put(packet.getGroupName(), packet.getMessages());
+                    log.info("Loaded {} messages for group {}", packet.getMessages().size(), packet.getGroupName());
                 }
-                case GROUPS -> groups = packet.getGroups();
+                case GROUPS -> {
+                    client.getClientApi().setGroups(packet.getGroups());
+                    log.info("Loaded {} groups", packet.getGroups().size());
+                }
             }
+        } else {
+            log.warn("Unhandled packet type: {}", msg.getClass().getSimpleName());
         }
     }
 
     public ConvoConnection getConnection() {
         return connection;
-    }
-
-    public List<ConvoGroup> getGroups() {
-        return groups;
-    }
-
-    public List<ConvoUser> getFriends() {
-        return friends;
-    }
-
-    public List<ConvoUser> getUsers() {
-        return users;
-    }
-
-    public List<Invite> getIncomingFriendInvites() {
-        return incomingFriendInvites;
-    }
-
-    public List<Invite> getOutgoingFriendInvites() {
-        return outgoingFriendInvites;
-    }
-
-    public Map<String, List<Invite>> getIncomingGroupInvites() {
-        return incomingGroupInvites;
-    }
-
-    public Map<String, List<Invite>> getOutgoingGroupInvites() {
-        return outgoingGroupInvites;
-    }
-
-    public Map<String, List<Message>> getMessages() {
-        return messages;
-    }
-
-    public ConvoGroup getGroup(String name) {
-        return groups.stream()
-                .filter(g -> g.getName().equalsIgnoreCase(name))
-                .findFirst()
-                .orElse(null);
     }
 }

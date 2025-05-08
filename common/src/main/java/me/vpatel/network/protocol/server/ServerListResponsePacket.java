@@ -45,7 +45,7 @@ public class ServerListResponsePacket extends ConvoPacket {
     }
 
     public ServerListResponsePacket(List<ConvoUser> users, boolean listUsers) {
-        this.type = ListType.FALCUN_USERS;
+        this.type = ListType.CONVO_USERS;
         this.users = users;
     }
 
@@ -102,7 +102,7 @@ public class ServerListResponsePacket extends ConvoPacket {
             for (Message message : messages) {
                 DataTypes.writeMessage(message, buf);
             }
-        } else if (type == ListType.FALCUN_USERS) {
+        } else if (type == ListType.CONVO_USERS) {
             buf.writeInt(users.size());
             for (ConvoUser user : users) {
                 DataTypes.writeUser(user, buf);
@@ -154,7 +154,7 @@ public class ServerListResponsePacket extends ConvoPacket {
             for (int i = 0; i < size; i++) {
                 groups.add(DataTypes.readGroup(buf));
             }
-        } else if (type == ListType.FALCUN_USERS) {
+        } else if (type == ListType.CONVO_USERS) {
             users = new ArrayList<>();
             int size = buf.readInt();
             for (int i = 0; i < size; i++) {
@@ -181,7 +181,7 @@ public class ServerListResponsePacket extends ConvoPacket {
             string.add("messages", messages);
         } else if (type == ListType.FRIENDS) {
             string.add("friends", friends);
-        } else if (type == ListType.FALCUN_USERS) {
+        } else if (type == ListType.CONVO_USERS) {
             string.add("users", users);
         }else if (type == ListType.GROUPS) {
             string.add("groups", groups);

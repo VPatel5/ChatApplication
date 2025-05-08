@@ -8,9 +8,11 @@ import me.vpatel.db.tables.UsersTable;
 import me.vpatel.network.api.ConvoUser;
 import me.vpatel.server.ConvoServer;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class UsersHandler {
 
@@ -74,6 +76,13 @@ public class UsersHandler {
         }
 
         return table.convert();
+    }
+
+    public List<ConvoUser> getAll()
+    {
+        List<UsersTable> users = server.getDbHandler().jdbi().withExtension(UserDao.class, UserDao::getAll);
+
+        return users.stream().map(UsersTable::convert).collect(Collectors.toList());
     }
 
     public ConvoUser getOrCacheUser(long id) {

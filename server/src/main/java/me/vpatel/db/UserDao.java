@@ -7,6 +7,8 @@ import org.jdbi.v3.sqlobject.customizer.Timestamped;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
+import java.util.List;
+
 @RegisterBeanMapper(UsersTable.class)
 public interface UserDao {
 
@@ -28,6 +30,9 @@ public interface UserDao {
 
     @SqlQuery("select * from convo_user where name = :name")
     UsersTable getByName(String name);
+
+    @SqlQuery("select * from convo_user")
+    List<UsersTable> getAll();
 
     @SqlUpdate("insert into convo_user (uuid, name, passwordHash, salt, timestamp) " +
             "values (:uuid, :name, :passwordHash, :salt, :now)")
