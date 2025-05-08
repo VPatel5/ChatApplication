@@ -23,6 +23,8 @@ public class ConvoPacketRegistry {
         register(PacketDirection.TO_SERVER, 3, ClientRegisterRequestPacket.class);
         register(PacketDirection.TO_SERVER, 4, ClientChatPacket.class);
         register(PacketDirection.TO_SERVER, 5, ClientActionPacket.class);
+        register(PacketDirection.TO_SERVER, 6, ClientListRequestPacket.class);
+
 
         // TO CLIENT
         register(PacketDirection.TO_CLIENT, 0, ServerPongPacket.class);
@@ -32,6 +34,8 @@ public class ConvoPacketRegistry {
         register(PacketDirection.TO_CLIENT, 4, ServerLoginFailPacket.class);
         register(PacketDirection.TO_CLIENT, 5, ServerAuthFinishedPacket.class);
         register(PacketDirection.TO_CLIENT, 6, ServerChatPacket.class);
+        register(PacketDirection.TO_CLIENT, 7, ServerListResponsePacket.class);
+        register(PacketDirection.TO_CLIENT, 8, ServerResponsePacket.class);
 
     }
 
