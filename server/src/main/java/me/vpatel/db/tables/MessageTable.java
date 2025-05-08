@@ -2,6 +2,7 @@ package me.vpatel.db.tables;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import me.vpatel.api.GroupsHandler;
 import me.vpatel.api.UsersHandler;
 import me.vpatel.network.api.Message;
 
@@ -16,11 +17,11 @@ public class MessageTable {
     private OffsetDateTime timestamp;
     private String message;
 
-    public static Message convert(MessageTable table, UsersHandler usersHandler) {
-        //TODO: Groups handler
+    public static Message convert(MessageTable table, UsersHandler usersHandler, GroupsHandler groupsHandler) {
         Message message = new Message();
         message.setInternalId(table.getId());
         message.setSender(usersHandler.getOrCacheUser(table.getUser()));
+        message.setGroup(groupsHandler.getOrCacheGroup(table.getGroupId()));
         message.setTimestamp(new Date(table.getTimestamp().toEpochSecond()));
         message.setMessage(table.getMessage());
         return message;

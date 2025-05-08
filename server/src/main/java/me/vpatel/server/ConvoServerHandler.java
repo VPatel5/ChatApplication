@@ -127,4 +127,12 @@ public class ConvoServerHandler extends ConvoHandler {
             connection.sendPacket(new ServerPongPacket(clientPingPacket.getPayload()));
         }
     }
+
+    public ConvoConnection getConnection(ConvoUser user)
+    {
+        return connections.stream()
+                .filter(c -> c.getUser().getInternalId() == user.getInternalId())
+                .findFirst()
+                .orElse(null);
+    }
 }

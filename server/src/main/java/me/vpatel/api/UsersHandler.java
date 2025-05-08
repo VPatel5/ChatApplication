@@ -19,7 +19,7 @@ public class UsersHandler {
     private final LoadingCache<Long, ConvoUser> cache = CacheBuilder.newBuilder()
             .maximumSize(1000)
             .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build(new CacheLoader<Long, ConvoUser>() {
+            .build(new CacheLoader<>() {
                 @Override
                 public ConvoUser load(Long id) {
                     UsersTable table = server.getDbHandler().jdbi().withExtension(UserDao.class, handle -> handle.getById(id));

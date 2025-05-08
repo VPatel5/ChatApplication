@@ -2,7 +2,12 @@ package me.vpatel.db.tables;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import me.vpatel.api.GroupsHandler;
 import me.vpatel.api.UsersHandler;
+import me.vpatel.network.api.ConvoGroup;
+import me.vpatel.network.api.ConvoUser;
+import me.vpatel.network.api.Invite;
+import me.vpatel.network.api.InviteType;
 import org.jdbi.v3.core.enums.EnumByOrdinal;
 
 import java.time.OffsetDateTime;
@@ -47,14 +52,14 @@ public class InviteTable {
     }
 
     public Invite convert(UsersHandler usersHandler, GroupsHandler groupsHandler) {
-        FalcunUser falcunUser = usersHandler.getOrCacheUser(user);
-        FalcunUser falcunInviter = usersHandler.getOrCacheUser(inviter);
+        ConvoUser convoUser = usersHandler.getOrCacheUser(user);
+        ConvoUser convoInviter = usersHandler.getOrCacheUser(inviter);
         Invite invite;
         if (getType() == InviteType.FRIEND) {
-            invite = new Invite(falcunUser, falcunInviter);
+            invite = new Invite(convoUser, convoInviter);
         } else {
-            FalcunGroup group = groupsHandler.getOrCacheGroup(groupId);
-            invite = new Invite(falcunUser, group,falcunInviter);
+            ConvoGroup group = groupsHandler.getOrCacheGroup(groupId);
+            invite = new Invite(convoUser, group,convoInviter);
         }
         invite.setInternalId(getId());
         return invite;

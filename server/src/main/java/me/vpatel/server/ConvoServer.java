@@ -4,6 +4,8 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import me.vpatel.api.FriendsHandler;
+import me.vpatel.api.GroupsHandler;
 import me.vpatel.api.UsersHandler;
 import me.vpatel.console.ConvoConsole;
 import me.vpatel.db.DBHandler;
@@ -18,6 +20,7 @@ public class ConvoServer {
 
     private static final Logger log = LogManager.getLogger(ConvoServer.class);
 
+    public static final Property<String> CHATGPT_KEY = new Property<>("chatgpt.key", String.class, "");
     public static final Property<String> DB_USER = new Property<>("db.user", String.class, "user");
     public static final Property<String> DB_PASS = new Property<>("db.pass", String.class, "pass");
     public static final Property<String> DB_NAME = new Property<>("db.name", String.class, "convo");
@@ -33,6 +36,8 @@ public class ConvoServer {
     private AuthHandler authHandler;
     private DBHandler dbHandler;
     private UsersHandler usersHandler;
+    private FriendsHandler friendsHandler;
+    private GroupsHandler groupsHandler;
 
     public ConvoServer(int port)
     {
@@ -69,6 +74,8 @@ public class ConvoServer {
         this.authHandler = new AuthHandler(this);
 
         usersHandler = new UsersHandler(this);
+        groupsHandler = new GroupsHandler(this);
+        friendsHandler = new FriendsHandler(this);
 
         log.info("Booting up server socket");
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -98,6 +105,18 @@ public class ConvoServer {
 
     public UsersHandler getUsersHandler() {
         return usersHandler;
+    }
+
+    public FriendsHandler getFriendsHandler() {
+        return friendsHandler;
+    }
+
+    public GroupsHandler getGroupsHandler() {
+        return groupsHandler;
+    }
+
+    public ConvoServerHandler getHandler() {
+        return handler;
     }
 }
 
