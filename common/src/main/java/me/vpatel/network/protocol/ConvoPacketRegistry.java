@@ -36,6 +36,7 @@ public class ConvoPacketRegistry {
         register(PacketDirection.TO_CLIENT, 6, ServerChatPacket.class);
         register(PacketDirection.TO_CLIENT, 7, ServerListResponsePacket.class);
         register(PacketDirection.TO_CLIENT, 8, ServerResponsePacket.class);
+        register(PacketDirection.TO_CLIENT, 9, ServerInviteStatusPacket.class);
 
     }
 
