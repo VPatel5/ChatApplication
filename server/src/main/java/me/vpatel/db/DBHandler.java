@@ -51,6 +51,23 @@ public class DBHandler {
             userDao.createTable();
             return null;
         });
+        jdbi.withExtension(FriendDao.class, friendDao -> {
+            friendDao.createTable();
+            return null;
+        });
+        jdbi.withExtension(InviteDao.class, inviteDao -> {
+            inviteDao.createTable();
+            return null;
+        });
+        jdbi.withExtension(GroupDao.class, groupDao -> {
+            groupDao.createTable();
+            groupDao.createMembershipTable();
+            return null;
+        });
+        jdbi.withExtension(MessageDao.class, messageDao -> {
+            messageDao.createTable();
+            return null;
+        });
     }
 
     public Jdbi jdbi() {
