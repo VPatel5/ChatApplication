@@ -22,6 +22,7 @@ public class ConvoPacketRegistry {
         register(PacketDirection.TO_SERVER, 2, ClientEncryptionResponsePacket.class);
         register(PacketDirection.TO_SERVER, 3, ClientRegisterRequestPacket.class);
         register(PacketDirection.TO_SERVER, 4, ClientChatPacket.class);
+        register(PacketDirection.TO_SERVER, 5, ClientActionPacket.class);
 
         // TO CLIENT
         register(PacketDirection.TO_CLIENT, 0, ServerPongPacket.class);
