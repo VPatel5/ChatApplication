@@ -1,6 +1,7 @@
 package me.vpatel.client.ui;
 
 import me.vpatel.client.ConvoClient;
+import me.vpatel.network.protocol.client.ClientListRequestPacket;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -28,6 +29,7 @@ public class MainUI extends JFrame {
     public MainUI(ConvoClient client) {
         super("Convo Chat");
         this.client = client;
+        updateLists();
         initComponents();
     }
 
@@ -141,4 +143,11 @@ public class MainUI extends JFrame {
         }
     }
 
+    public void updateLists()
+    {
+        for (ClientListRequestPacket.ListType type : ClientListRequestPacket.ListType.values())
+        {
+            client.getHandler().getConnection().sendPacket(new ClientListRequestPacket(type));
+        }
+    }
 }
