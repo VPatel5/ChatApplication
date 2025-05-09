@@ -1,10 +1,27 @@
-body { display:flex;height:100vh;margin:0;font-family:sans-serif; }
-#sidebar { width:250px;background:#f4f4f4;padding:10px;box-sizing:border-box;overflow-y:auto; }
-#sidebar ul { list-style:none;padding:0;margin:0; }
-#sidebar li { padding:5px; cursor:pointer; }
-#sidebar li:hover { background:#ddd; }
-#chat { flex:1;display:flex;flex-direction:column; }
-#messages { flex:1;overflow-y:auto;padding:10px;border-bottom:1px solid #ccc; }
-#input { display:flex;padding:10px; }
-#input input { flex:1;padding:5px; }
-#input button { padding:5px 10px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body, html { height: 100%; font-family: Arial, sans-serif; }
+#app { display: flex; height: 100%; }
+
+/* Sidebar */
+#sidebar { width: 260px; background: #2f3136; color: #dcddde; display: flex; flex-direction: column; }
+#tabs { display: flex; }
+.tab { flex: 1; padding: 12px; cursor: pointer; background: #36393f; border: none; color: #dcddde; font-weight: bold; }
+.tab.active { background: #7289da; }
+#search-section { padding: 8px; background: #2f3136; }
+#search-input { width: 100%; padding: 8px; border-radius: 4px; border: none; }
+.list { flex: 1; overflow-y: auto; list-style: none; }
+.list.hidden { display: none; }
+.list li { padding: 10px 12px; cursor: pointer; }
+.list li:hover { background: #40444b; }
+.action-btn { margin: 8px 12px; padding: 8px; background: #7289da; border: none; border-radius: 4px; color: white; cursor: pointer; }
+.action-btn:hover { background: #5b6eae; }
+
+/* Chat Panel */
+#chat-panel { flex: 1; display: flex; flex-direction: column; background: #36393f; color: #dcddde; }
+#chat-header { padding: 12px; background: #2f3136; font-weight: bold; }
+#chat-messages { flex: 1; padding: 12px; overflow-y: auto; }
+#chat-messages div { margin-bottom: 8px; }
+#chat-input-section { display: flex; padding: 12px; background: #40444b; }
+#chat-input { flex: 1; padding: 8px; border: none; border-radius: 4px; margin-right: 8px; }
+#chat-send-btn { padding: 8px 16px; background: #7289da; border: none; border-radius: 4px; color: white; cursor: pointer; }
+#chat-send-btn:hover { background: #5b6eae; }

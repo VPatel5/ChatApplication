@@ -1,22 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Convo Chat</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Application</title>
+    <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div id="sidebar">
-    <h3>Friends</h3><ul id="friendsList"></ul>
-    <h3>Groups</h3><ul id="groupsList"></ul>
-</div>
-<div id="chat">
-    <div id="messages"></div>
-    <div id="input">
-        <input id="msgField" placeholder="Type a message...">
-        <button id="sendBtn">Send</button>
+<div id="app">
+    <!-- Sidebar: Friends & Groups Tabs -->
+    <div id="sidebar">
+        <div id="tabs">
+            <button id="friends-tab" class="tab active">Friends</button>
+            <button id="groups-tab"  class="tab">Groups</button>
+        </div>
+        <div id="search-section">
+            <input id="search-input" placeholder="Search friends..." />
+        </div>
+        <ul id="friends-list" class="list"></ul>
+        <ul id="groups-list"  class="list hidden"></ul>
+        <button id="add-group-btn" class="action-btn">Create Group</button>
+    </div>
+
+    <!-- Chat Panel -->
+    <div id="chat-panel">
+        <div id="chat-header">Select a conversation</div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-section">
+            <input id="chat-input" placeholder="Message..." />
+            <button id="chat-send-btn">Send</button>
+        </div>
     </div>
 </div>
+
 <script src="app.js"></script>
 </body>
 </html>

@@ -7,6 +7,7 @@ import me.vpatel.network.api.Invite;
 import me.vpatel.network.api.Message;
 import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacket;
+import me.vpatel.network.protocol.client.ClientListRequestPacket;
 import me.vpatel.network.protocol.server.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -188,5 +189,10 @@ public class ConvoClientHandler extends ConvoHandler {
         default void onMessages(String target, List<Message> messages) {}
         default void onUnhandled(ConvoPacket packet) {}
         default void onError(String error) {}
+    }
+
+    public void requestAllLists()
+    {
+        Arrays.stream(ClientListRequestPacket.ListType.values()).forEach(client.getClientApi()::list);
     }
 }
