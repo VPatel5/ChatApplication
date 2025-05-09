@@ -5,11 +5,12 @@ import me.vpatel.network.api.ConvoGroup;
 import me.vpatel.network.api.ConvoUser;
 import me.vpatel.network.api.Invite;
 import me.vpatel.network.api.Message;
-import me.vpatel.network.protocol.client.ClientActionPacket;
-import me.vpatel.network.protocol.client.ClientChatPacket;
-import me.vpatel.network.protocol.client.ClientListRequestPacket;
+import me.vpatel.network.protocol.client.*;
 import me.vpatel.network.protocol.client.ClientListRequestPacket.ListType;
 import me.vpatel.network.protocol.client.ClientActionPacket.Action;
+import me.vpatel.network.protocol.server.ServerGroupMessagePacket;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ClientApi {
+    private static final Logger log = LogManager.getLogger(ClientApi.class);
+
     private final ConvoClient client;
 
     public ClientApi(ConvoClient client) {
@@ -30,26 +33,29 @@ public class ClientApi {
     private List<Invite> outgoingFriendInvites = new ArrayList<>();
     private Map<String, List<Invite>> incomingGroupInvites = new HashMap<>();
     private Map<String, List<Invite>> outgoingGroupInvites = new HashMap<>();
-    private Map<String, List<Message>> messages = new HashMap<>();
+    private Map<String, List<Message>> groupMessages = new HashMap<>();
+    private List<Message> directMessages = new ArrayList<>();
 
     public void chat(String friendName, String message) {
+        log.info("Sending {} message: {}", friendName, message);
         for (ConvoUser friend : this.getFriends()) {
             if (friend.getName().equals(friendName)) {
                 client.getHandler().getConnection()
-                        .sendPacket(new ClientChatPacket(message, friend.getId()));
+                        .sendPacket(new ClientDirectMessagePacket(message, friend.getId()));
                 return;
             }
         }
     }
 
     public void chat(ConvoUser user, String message) {
+        log.info("Sending {} message: {}", user, message);
         client.getHandler().getConnection()
-                .sendPacket(new ClientChatPacket(message, user.getId()));
+                .sendPacket(new ClientDirectMessagePacket(message, user.getId()));
     }
 
     public void groupChat(String groupName, String message) {
         client.getHandler().getConnection()
-                .sendPacket(new ClientChatPacket(message, groupName));
+                .sendPacket(new ClientGroupMessagePacket(message, groupName));
     }
 
     public void list(ListType type) {
@@ -172,8 +178,22 @@ public class ClientApi {
         }
     }
 
-    public Map<String, List<Message>> getMessages() {
-        return messages;
+    public void requestDirectMessages()
+    {
+        client.getHandler().getConnection().sendPacket(new ClientDirectMessagesRequestPacket());
+    }
+
+    public void requestGroupMessages(String group)
+    {
+        client.getHandler().getConnection().sendPacket(new ClientGroupMessagesRequestPacket(group));
+    }
+
+    public List<Message> getDirectMessages() {
+        return directMessages;
+    }
+
+    public Map<String, List<Message>> getGroupMessages() {
+        return groupMessages;
     }
 
     public Map<String, List<Invite>> getOutgoingGroupInvites() {
@@ -227,16 +247,20 @@ public class ClientApi {
         this.incomingGroupInvites = incomingGroupInvites;
     }
 
-    public void setMessages(Map<String, List<Message>> messages) {
-        this.messages = messages;
-    }
-
     public void setOutgoingFriendInvites(List<Invite> outgoingFriendInvites) {
         this.outgoingFriendInvites = outgoingFriendInvites;
     }
 
     public void setOutgoingGroupInvites(Map<String, List<Invite>> outgoingGroupInvites) {
         this.outgoingGroupInvites = outgoingGroupInvites;
+    }
+
+    public void setDirectMessages(List<Message> directMessages) {
+        this.directMessages = directMessages;
+    }
+
+    public void setGroupMessages(Map<String, List<Message>> groupMessages) {
+        this.groupMessages = groupMessages;
     }
 
     public void setUsers(List<ConvoUser> users) {

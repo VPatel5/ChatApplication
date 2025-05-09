@@ -21,10 +21,12 @@ public class ConvoPacketRegistry {
         register(PacketDirection.TO_SERVER, 1, ClientLoginStartPacket.class);
         register(PacketDirection.TO_SERVER, 2, ClientEncryptionResponsePacket.class);
         register(PacketDirection.TO_SERVER, 3, ClientRegisterRequestPacket.class);
-        register(PacketDirection.TO_SERVER, 4, ClientChatPacket.class);
+        register(PacketDirection.TO_SERVER, 4, ClientDirectMessagePacket.class);
         register(PacketDirection.TO_SERVER, 5, ClientActionPacket.class);
         register(PacketDirection.TO_SERVER, 6, ClientListRequestPacket.class);
-
+        register(PacketDirection.TO_SERVER, 7, ClientGroupMessagePacket.class);
+        register(PacketDirection.TO_SERVER, 8, ClientDirectMessagesRequestPacket.class);
+        register(PacketDirection.TO_SERVER, 9, ClientGroupMessagesRequestPacket.class);
 
         // TO CLIENT
         register(PacketDirection.TO_CLIENT, 0, ServerPongPacket.class);
@@ -33,10 +35,13 @@ public class ConvoPacketRegistry {
         register(PacketDirection.TO_CLIENT, 3, ServerRegisterResponsePacket.class);
         register(PacketDirection.TO_CLIENT, 4, ServerLoginFailPacket.class);
         register(PacketDirection.TO_CLIENT, 5, ServerAuthFinishedPacket.class);
-        register(PacketDirection.TO_CLIENT, 6, ServerChatPacket.class);
+        register(PacketDirection.TO_CLIENT, 6, ServerDirectMessagePacket.class);
         register(PacketDirection.TO_CLIENT, 7, ServerListResponsePacket.class);
         register(PacketDirection.TO_CLIENT, 8, ServerResponsePacket.class);
         register(PacketDirection.TO_CLIENT, 9, ServerInviteStatusPacket.class);
+        register(PacketDirection.TO_CLIENT, 10, ServerGroupMessagePacket.class);
+        register(PacketDirection.TO_CLIENT, 11, ServerDirectMessagesReponsePacket.class);
+        register(PacketDirection.TO_CLIENT, 12, ServerGroupMessagesReponsePacket.class);
 
     }
 

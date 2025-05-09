@@ -53,6 +53,7 @@ public class WebUI extends Application {
                     engine.load(getClass().getResource("/ui/loading.html").toExternalForm());
                     // 2) Request all necessary lists
                     client.getHandler().requestAllLists();
+                    api.requestDirectMessages();
                     // 3) After delay, load real UI
                     new Thread(() -> {
                         try { Thread.sleep(5000); }
@@ -62,6 +63,12 @@ public class WebUI extends Application {
                         );
                     }).start();
                 });
+            }
+        });
+
+        client.getHandler().addListener(new ConvoClientHandler.Listener() {
+            @Override
+            public void onDirectMessages(List<Message> messages) {
             }
         });
 
@@ -123,9 +130,9 @@ public class WebUI extends Application {
 
             case "selectFriend" -> {
                 String tgt = (String) cmd.get("target");
-                api.list(ClientListRequestPacket.ListType.MESSAGES, tgt);
                 runJS("populateMessages",
-                        api.getMessages().getOrDefault(tgt, List.of()).stream()
+                        api.getDirectMessages().stream()
+                                .filter(m -> m.getSender().getName().equalsIgnoreCase(tgt) || m.getRecipient().getName().equalsIgnoreCase(tgt))
                                 .map(m -> m.getSender().getName() + ": " + m.getMessage())
                                 .toArray(String[]::new)
                 );

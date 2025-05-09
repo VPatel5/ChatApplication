@@ -6,12 +6,13 @@ import com.google.common.base.Objects;
 import java.util.Date;
 
 public class Message {
-
     private long internalId;
     private ConvoUser sender;
-    private ConvoGroup group;
+    private ConvoUser recipient;   // null for group
+    private ConvoGroup group;      // null for private
     private Date timestamp;
     private String message;
+    private MessageType messageType;
 
     public long getInternalId() {
         return internalId;
@@ -27,6 +28,14 @@ public class Message {
 
     public void setSender(ConvoUser sender) {
         this.sender = sender;
+    }
+
+    public ConvoUser getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(ConvoUser recipient) {
+        this.recipient = recipient;
     }
 
     public ConvoGroup getGroup() {
@@ -53,27 +62,43 @@ public class Message {
         this.message = message;
     }
 
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Message message1 = (Message) o;
-        return internalId == message1.internalId && Objects.equal(sender, message1.sender) && Objects.equal(group, message1.group) && Objects.equal(timestamp, message1.timestamp) && Objects.equal(message, message1.message);
+        if (!(o instanceof Message that)) return false;
+        return internalId == that.internalId
+                && Objects.equal(sender,    that.sender)
+                && Objects.equal(recipient, that.recipient)
+                && Objects.equal(group,     that.group)
+                && Objects.equal(timestamp, that.timestamp)
+                && Objects.equal(message,   that.message)
+                && Objects.equal(messageType,   that.messageType);
+
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(internalId, sender, group, timestamp, message);
+        return Objects.hashCode(internalId, sender, recipient, group, timestamp, message, messageType);
     }
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
+        MoreObjects.ToStringHelper ts = MoreObjects.toStringHelper(this)
                 .add("internalId", internalId)
                 .add("sender", sender)
-                .add("group", group)
                 .add("timestamp", timestamp)
                 .add("message", message)
-                .toString();
+                .add("type", messageType);
+        if (recipient != null) ts.add("recipient", recipient);
+        if (group     != null) ts.add("group",     group);
+        return ts.toString();
     }
 }

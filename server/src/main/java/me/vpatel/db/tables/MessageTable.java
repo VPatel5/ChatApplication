@@ -5,6 +5,7 @@ import com.google.common.base.Objects;
 import me.vpatel.api.GroupsHandler;
 import me.vpatel.api.UsersHandler;
 import me.vpatel.network.api.Message;
+import me.vpatel.network.api.MessageType;
 
 import java.time.OffsetDateTime;
 import java.util.Date;
@@ -12,7 +13,8 @@ import java.util.Date;
 public class MessageTable {
 
     private long id;
-    private long user;
+    private long senderId;
+    private long recipientId;
     private long groupId;
     private OffsetDateTime timestamp;
     private String message;
@@ -20,8 +22,17 @@ public class MessageTable {
     public static Message convert(MessageTable table, UsersHandler usersHandler, GroupsHandler groupsHandler) {
         Message message = new Message();
         message.setInternalId(table.getId());
-        message.setSender(usersHandler.getOrCacheUser(table.getUser()));
-        message.setGroup(groupsHandler.getOrCacheGroup(table.getGroupId()));
+        message.setSender(usersHandler.getOrCacheUser(table.getSenderId()));
+        if (table.getGroupId() == -1)
+        {
+            message.setRecipient(usersHandler.getOrCacheUser(table.getRecipientId()));
+            message.setMessageType(MessageType.USER);
+        }
+        else
+        {
+            message.setGroup(groupsHandler.getOrCacheGroup(table.getGroupId()));
+            message.setMessageType(MessageType.GROUP);
+        }
         message.setTimestamp(new Date(table.getTimestamp().toEpochSecond()));
         message.setMessage(table.getMessage());
         return message;
@@ -35,12 +46,12 @@ public class MessageTable {
         this.id = id;
     }
 
-    public long getUser() {
-        return user;
+    public long getRecipientId() {
+        return recipientId;
     }
 
-    public void setUser(long user) {
-        this.user = user;
+    public long getSenderId() {
+        return senderId;
     }
 
     public long getGroupId() {
@@ -49,6 +60,14 @@ public class MessageTable {
 
     public void setGroupId(long group) {
         this.groupId = group;
+    }
+
+    public void setRecipientId(long recipientId) {
+        this.recipientId = recipientId;
+    }
+
+    public void setSenderId(long senderId) {
+        this.senderId = senderId;
     }
 
     public OffsetDateTime getTimestamp() {
@@ -72,20 +91,21 @@ public class MessageTable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MessageTable that = (MessageTable) o;
-        return id == that.id && user == that.user && groupId == that.groupId && Objects.equal(timestamp, that.timestamp) && Objects.equal(message, that.message);
+        return id == that.id && senderId == that.senderId && recipientId == that.recipientId && groupId == that.groupId && Objects.equal(timestamp, that.timestamp) && Objects.equal(message, that.message);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, user, groupId, timestamp, message);
+        return Objects.hashCode(id, senderId, recipientId, groupId, timestamp, message);
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
-                .add("user", user)
-                .add("group", groupId)
+                .add("senderId", senderId)
+                .add("recipientId", recipientId)
+                .add("groupId", groupId)
                 .add("timestamp", timestamp)
                 .add("message", message)
                 .toString();

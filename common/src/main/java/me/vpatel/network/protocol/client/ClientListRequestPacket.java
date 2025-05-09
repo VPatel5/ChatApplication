@@ -34,7 +34,7 @@ public class ClientListRequestPacket extends ConvoPacket {
     @Override
     public void toWire(ByteBuf buf) {
         buf.writeInt(type.ordinal());
-        if (type == ListType.OUTGOING_GROUP_INVITES || type == ListType.MESSAGES) {
+        if (type == ListType.OUTGOING_GROUP_INVITES) {
             DataTypes.writeString(groupName, buf);
         }
     }
@@ -42,7 +42,7 @@ public class ClientListRequestPacket extends ConvoPacket {
     @Override
     public void fromWire(ByteBuf buf) {
         type = ListType.values()[buf.readInt()];
-        if (type == ListType.OUTGOING_GROUP_INVITES || type == ListType.MESSAGES) {
+        if (type == ListType.OUTGOING_GROUP_INVITES) {
             groupName = DataTypes.readString(buf);
         }
     }
@@ -51,13 +51,13 @@ public class ClientListRequestPacket extends ConvoPacket {
     public String toString() {
         MoreObjects.ToStringHelper string = MoreObjects.toStringHelper(this)
                 .add("type", this.type);
-        if (type == ListType.OUTGOING_GROUP_INVITES || type == ListType.MESSAGES) {
+        if (type == ListType.OUTGOING_GROUP_INVITES) {
             string.add("groupName", groupName);
         }
         return string.toString();
     }
 
     public enum ListType {
-        INCOMING_FRIEND_INVITES, OUTGOING_FRIEND_INVITES, FRIENDS, INCOMING_GROUP_INVITES, OUTGOING_GROUP_INVITES, GROUPS, MESSAGES, CONVO_USERS
+        INCOMING_FRIEND_INVITES, OUTGOING_FRIEND_INVITES, FRIENDS, INCOMING_GROUP_INVITES, OUTGOING_GROUP_INVITES, GROUPS, CONVO_USERS
     }
 }

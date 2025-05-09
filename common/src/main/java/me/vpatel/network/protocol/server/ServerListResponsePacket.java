@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBuf;
 import me.vpatel.network.api.ConvoGroup;
 import me.vpatel.network.api.ConvoUser;
 import me.vpatel.network.api.Invite;
-import me.vpatel.network.api.Message;
 import me.vpatel.network.protocol.ConvoPacket;
 import me.vpatel.network.protocol.DataTypes;
 import me.vpatel.network.protocol.client.ClientListRequestPacket.ListType;
@@ -21,7 +20,6 @@ public class ServerListResponsePacket extends ConvoPacket {
     private List<ConvoUser> users;
     private List<ConvoUser> friends;
     private List<ConvoGroup> groups;
-    private List<Message> messages;
 
     public ServerListResponsePacket() {
 
@@ -36,12 +34,6 @@ public class ServerListResponsePacket extends ConvoPacket {
         this.type = ListType.OUTGOING_GROUP_INVITES;
         this.groupName = groupName;
         this.invites = invites;
-    }
-
-    public ServerListResponsePacket(List<Message> messages, String groupName) {
-        this.type = ListType.MESSAGES;
-        this.groupName = groupName;
-        this.messages = messages;
     }
 
     public ServerListResponsePacket(List<ConvoUser> users, boolean listUsers) {
@@ -83,10 +75,6 @@ public class ServerListResponsePacket extends ConvoPacket {
         return users;
     }
 
-    public List<Message> getMessages() {
-        return messages;
-    }
-
     @Override
     public void toWire(ByteBuf buf) {
         buf.writeInt(type.ordinal());
@@ -95,12 +83,6 @@ public class ServerListResponsePacket extends ConvoPacket {
             buf.writeInt(invites.size());
             for (Invite invite : invites) {
                 DataTypes.writeInvite(invite, buf);
-            }
-        } else if (type == ListType.MESSAGES) {
-            DataTypes.writeString(groupName, buf);
-            buf.writeInt(messages.size());
-            for (Message message : messages) {
-                DataTypes.writeMessage(message, buf);
             }
         } else if (type == ListType.CONVO_USERS) {
             buf.writeInt(users.size());
@@ -135,14 +117,7 @@ public class ServerListResponsePacket extends ConvoPacket {
             for (int i = 0; i < size; i++) {
                 invites.add(DataTypes.readInvite(buf));
             }
-        } else if (type == ListType.MESSAGES) {
-            groupName = DataTypes.readString(buf);
-            messages = new ArrayList<>();
-            int size = buf.readInt();
-            for (int i = 0; i < size; i++) {
-                messages.add(DataTypes.readMessage(buf));
-            }
-        }else if (type == ListType.FRIENDS) {
+        } else if (type == ListType.FRIENDS) {
             friends = new ArrayList<>();
             int size = buf.readInt();
             for (int i = 0; i < size; i++) {
@@ -176,9 +151,6 @@ public class ServerListResponsePacket extends ConvoPacket {
         if (type == ListType.OUTGOING_GROUP_INVITES) {
             string.add("groupName", groupName);
             string.add("invites", invites);
-        } else if (type == ListType.MESSAGES) {
-            string.add("groupName", groupName);
-            string.add("messages", messages);
         } else if (type == ListType.FRIENDS) {
             string.add("friends", friends);
         } else if (type == ListType.CONVO_USERS) {

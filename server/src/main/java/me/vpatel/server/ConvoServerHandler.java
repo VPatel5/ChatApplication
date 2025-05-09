@@ -3,6 +3,8 @@ package me.vpatel.server;
 import me.vpatel.network.ConvoConnection;
 import me.vpatel.network.api.ConvoUser;
 import me.vpatel.network.api.Invite;
+import me.vpatel.network.api.Message;
+import me.vpatel.network.api.MessageType;
 import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacket;
 import me.vpatel.network.protocol.client.*;
@@ -153,11 +155,6 @@ public class ConvoServerHandler extends ConvoHandler {
                     connection.sendPacket(new ServerListResponsePacket(req.getGroupName(), invites));
                     log.debug("Sent {} outgoing group invites for {}", invites.size(), req.getGroupName());
                 }
-                case MESSAGES -> {
-                    var msgs = server.getGroupsHandler().getMessages(req.getGroupName(), connection.getUser());
-                    connection.sendPacket(new ServerListResponsePacket(msgs, req.getGroupName()));
-                    log.debug("Sent {} messages for {}", msgs.size(), req.getGroupName());
-                }
                 default -> {
                     log.error("Unknown list type {} from {}", req.getType(), connection.getRemoteAddress());
                     connection.sendPacket(new ServerResponsePacket("Unknown list request type", ResponseType.ERROR));
@@ -227,21 +224,36 @@ public class ConvoServerHandler extends ConvoHandler {
                 }
             }
             connection.sendPacket(new ServerResponsePacket(status, "OK".equals(status) ? ResponseType.OK : ResponseType.ERROR));
-        } else if (msg instanceof ClientChatPacket packet) {
-            if (packet.getMessageType() == ClientChatPacket.MessageType.USER) {
-                ConvoUser user = server.getUsersHandler().getUser(packet.getUser());
-                if (user == null) {
-                    connection.sendPacket(new ServerResponsePacket("Unknown user", ResponseType.WARNING));
-                } else {
-                    String response = server.getFriendsHandler().chat(connection.getUser(), user, packet.getMessage());
-                    connection.sendPacket(new ServerResponsePacket(response, "Send".equals(response) ? ResponseType.OK : ResponseType.WARNING));
-                }
-            } else if (packet.getMessageType() == ClientChatPacket.MessageType.GROUP) {
-                String response = server.getGroupsHandler().chat(packet.getName(), connection.getUser(), packet.getMessage());
-                connection.sendPacket(new ServerResponsePacket(response, "Send".equals(response) ? ResponseType.OK : ResponseType.WARNING));
+        } else if (msg instanceof ClientDirectMessagePacket packet) {
+            log.info("Received ClientDMPacket Type {}", packet.getMessageType());
+            ConvoUser user = server.getUsersHandler().getUser(packet.getUser());
+            if (user == null) {
+                connection.sendPacket(new ServerResponsePacket("Unknown user", ResponseType.WARNING));
             } else {
-                connection.sendPacket(new ServerResponsePacket("Unknown message type", ResponseType.ERROR));
+                String response = server.getFriendsHandler().chat(connection.getUser(), user, packet.getMessage());
+                connection.sendPacket(new ServerResponsePacket(response, "Send".equals(response) ? ResponseType.OK : ResponseType.WARNING));
             }
+        } else if (msg instanceof ClientGroupMessagePacket packet) {
+            String response = server.getGroupsHandler().chat(packet.getName(), connection.getUser(), packet.getMessage());
+            connection.sendPacket(new ServerResponsePacket(response, "Send".equals(response) ? ResponseType.OK : ResponseType.WARNING));
+        }
+        else if (msg instanceof ClientDirectMessagesRequestPacket packet)
+        {
+            List<Message> messages = server.getGroupsHandler().getMessages(connection.getUser());
+            if (messages == null)
+            {
+                messages = new ArrayList<>();
+            }
+            connection.sendPacket(new ServerDirectMessagesReponsePacket(messages));
+        }
+        else if (msg instanceof ClientGroupMessagesRequestPacket packet)
+        {
+            List<Message> messages = server.getGroupsHandler().getMessages(packet.getGroupName(), connection.getUser());
+            if (messages == null)
+            {
+                messages = new ArrayList<>();
+            }
+            connection.sendPacket(new ServerGroupMessagesReponsePacket(messages, packet.getGroupName()));
         }
     }
 

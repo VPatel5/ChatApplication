@@ -149,15 +149,21 @@ public class ConvoClientHandler extends ConvoHandler {
                     client.getClientApi().setGroups(list.getGroups());
                     listeners.forEach(l -> l.onGroupsList(list.getGroups()));
                 }
-                case MESSAGES -> {
-                    client.getClientApi().getMessages()
-                            .put(list.getGroupName(), list.getMessages());
-                    listeners.forEach(l -> l.onMessages(list.getGroupName(), list.getMessages()));
-                }
             }
 
             // UNHANDLED
-        } else {
+        } else if (msg instanceof ServerDirectMessagesReponsePacket packet) {
+            client.getClientApi().setDirectMessages(packet.getMessages());
+            listeners.forEach(l -> l.onDirectMessages(packet.getMessages()));
+        } else if (msg instanceof ServerGroupMessagesReponsePacket packet) {
+            client.getClientApi().getGroupMessages().put(packet.getGroupName(), packet.getMessages());
+            listeners.forEach(l -> l.onGroupMessages(packet.getGroupName(), packet.getMessages()));
+        } else if (msg instanceof ServerDirectMessagePacket packet) {
+            client.getClientApi().requestDirectMessages();
+        } else if (msg instanceof ServerGroupMessagePacket packet) {
+            client.getClientApi().requestGroupMessages(packet.getName());
+        }
+        else {
             log.warn("Unhandled packet: {}", msg.getClass().getSimpleName());
             listeners.forEach(l -> l.onUnhandled(msg));
         }
@@ -186,7 +192,8 @@ public class ConvoClientHandler extends ConvoHandler {
         default void onIncomingGroupInvites(Map<String,List<Invite>> invites) {}
         default void onOutgoingGroupInvites(Map<String,List<Invite>> invites) {}
         default void onGroupsList(List<ConvoGroup> groups) {}
-        default void onMessages(String target, List<Message> messages) {}
+        default void onDirectMessages(List<Message> messages) {}
+        default void onGroupMessages(String group, List<Message> messages) {}
         default void onUnhandled(ConvoPacket packet) {}
         default void onError(String error) {}
     }

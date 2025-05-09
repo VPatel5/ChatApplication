@@ -130,8 +130,13 @@ public class DataTypes {
     public static Message readMessage(ByteBuf buf) {
         Message message = new Message();
         message.setInternalId(buf.readLong());
+        MessageType type = MessageType.values()[buf.readInt()];
+        message.setMessageType(type);
+        message.setRecipient(readUser(buf));
         message.setSender(readUser(buf));
-        message.setGroup(readGroup(buf));
+        if (type == MessageType.GROUP) {
+            message.setGroup(readGroup(buf));
+        }
         message.setTimestamp(new Date(buf.readLong()));
         message.setMessage(readString(buf));
         return message;
@@ -139,8 +144,12 @@ public class DataTypes {
 
     public static void writeMessage(Message message, ByteBuf buf) {
         buf.writeLong(message.getInternalId());
+        buf.writeInt(message.getMessageType().ordinal());
+        writeUser(message.getRecipient(), buf);
         writeUser(message.getSender(), buf);
-        writeGroup(message.getGroup(), buf);
+        if (message.getMessageType() == MessageType.GROUP) {
+            writeGroup(message.getGroup(), buf);
+        }
         buf.writeLong(message.getTimestamp().getTime());
         writeString(message.getMessage(), buf);
     }

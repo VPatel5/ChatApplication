@@ -2,16 +2,19 @@ package me.vpatel.api;
 
 import me.vpatel.db.FriendDao;
 import me.vpatel.db.InviteDao;
+import me.vpatel.db.MessageDao;
 import me.vpatel.db.UserDao;
 import me.vpatel.db.tables.InviteTable;
+import me.vpatel.db.tables.MessageTable;
 import me.vpatel.db.tables.UsersTable;
 import me.vpatel.network.ConvoConnection;
 import me.vpatel.network.api.ConvoUser;
 import me.vpatel.network.api.Invite;
 import me.vpatel.network.api.InviteType;
-import me.vpatel.network.protocol.server.ServerChatPacket;
+import me.vpatel.network.protocol.server.ServerDirectMessagePacket;
 import me.vpatel.server.ConvoServer;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -142,17 +145,43 @@ public class FriendsHandler {
         return affectedRows != 0 ? "OK" : "User was not in friendlist!";
     }
 
+//    public String chat(ConvoUser sender, ConvoUser receiver, String message) {
+//        ConvoConnection connection = server.getHandler().getConnection(receiver);
+//        if (connection == null) {
+//            return "User is not online or not in friend list!";
+//        }
+//
+//        if (getFriends(sender).stream().noneMatch(p -> p.getInternalId() == receiver.getInternalId())) {
+//            return "User is not online or not in friend list!";
+//        } else {
+//            connection.sendPacket(new ServerChatPacket(message, sender.getId()));
+//            return "Send";
+//        }
+//    }
+
     public String chat(ConvoUser sender, ConvoUser receiver, String message) {
-        ConvoConnection connection = server.getHandler().getConnection(receiver);
-        if (connection == null) {
-            return "User is not online or not in friend list!";
+        // Verify they are friends
+        boolean areFriends = getFriends(sender).stream()
+                .anyMatch(f -> f.getInternalId() == receiver.getInternalId());
+        if (!areFriends) {
+            return "User is not in friend list!";
         }
 
-        if (getFriends(sender).stream().noneMatch(p -> p.getInternalId() == receiver.getInternalId())) {
-            return "User is not online or not in friend list!";
-        } else {
-            connection.sendPacket(new ServerChatPacket(message, sender.getId()));
-            return "Send";
+        ConvoConnection connection = server.getHandler().getConnection(receiver);
+        if (connection != null) {
+            connection.sendPacket(new ServerDirectMessagePacket(message, sender.getId()));
         }
+
+        MessageTable messageTable = new MessageTable();
+        messageTable.setSenderId(sender.getInternalId());
+        messageTable.setRecipientId(receiver.getInternalId());
+        messageTable.setTimestamp(OffsetDateTime.now());
+        messageTable.setGroupId(-1);
+        messageTable.setMessage(message);
+
+        return server.getDbHandler().jdbi().withExtension(MessageDao.class, handle -> {
+            handle.saveMessage(messageTable);
+            return "Send";
+        });
     }
 }

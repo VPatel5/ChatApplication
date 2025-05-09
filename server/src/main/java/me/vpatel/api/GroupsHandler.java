@@ -13,7 +13,7 @@ import me.vpatel.db.tables.MessageTable;
 import me.vpatel.db.tables.UsersTable;
 import me.vpatel.network.ConvoConnection;
 import me.vpatel.network.api.*;
-import me.vpatel.network.protocol.server.ServerChatPacket;
+import me.vpatel.network.protocol.server.ServerGroupMessagePacket;
 import me.vpatel.server.ConvoServer;
 
 import java.util.ArrayList;
@@ -239,14 +239,14 @@ public class GroupsHandler {
         getGroupMembers(group.getInternalId()).forEach(receiver -> {
             ConvoConnection connection = server.getHandler().getConnection(receiver);
             if (connection != null) {
-                connection.sendPacket(new ServerChatPacket(message, name, user.getId()));
+                connection.sendPacket(new ServerGroupMessagePacket(message, name, user.getId()));
             }
         });
 
         MessageTable messageTable = new MessageTable();
         messageTable.setGroupId(group.getInternalId());
         messageTable.setMessage(message);
-        messageTable.setUser(user.getInternalId());
+        messageTable.setSenderId(user.getInternalId());
         return server.getDbHandler().jdbi().withExtension(MessageDao.class, handle -> {
             handle.saveMessage(messageTable);
             return "Send";
@@ -255,11 +255,14 @@ public class GroupsHandler {
 
     public List<Message> getMessages(String name, ConvoUser user) {
         ConvoGroup group = getGroup(name, user);
-        if (group == null) {
-            return new ArrayList<>();
-        }
+        if (group == null) return null;
+        return server.getDbHandler().jdbi().withExtension(MessageDao.class, handle -> handle.retrieveGroupMessages(group.getInternalId(), 100))
+                .stream().map((MessageTable table) -> MessageTable.convert(table, server.getUsersHandler(), server.getGroupsHandler())).collect(Collectors.toList());
+    }
 
-        return server.getDbHandler().jdbi().withExtension(MessageDao.class, handle -> handle.retrieveMessages(group.getInternalId(), 100))
+    public List<Message> getMessages(ConvoUser user)
+    {
+        return server.getDbHandler().jdbi().withExtension(MessageDao.class, handle -> handle.retrievePrivateMessages(user.getInternalId(), 100))
                 .stream().map((MessageTable table) -> MessageTable.convert(table, server.getUsersHandler(), server.getGroupsHandler())).collect(Collectors.toList());
     }
 
