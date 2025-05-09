@@ -49,17 +49,19 @@ public class ConvoServerHandler extends ConvoHandler {
             String username = packet.getUsername();
             log.info("Login attempt from {} as '{}'", connection.getRemoteAddress(), username);
 
-            boolean already = connections.stream()
-                    .filter(c -> c.getUser() != null)
-                    .anyMatch(c -> c.getUser().getName().equalsIgnoreCase(username));
-            if (already) {
-                log.warn("Rejecting login for '{}' - already connected", username);
-                connection.close("User already connected");
-                return;
-            }
-
             ConvoUser user = server.getAuthHandler().loginUser(username, packet.getPassword());
             if (user != null) {
+
+                boolean already = connections.stream()
+                        .filter(c -> c.getUser() != null && c.getUser().getName() != null)
+                        .anyMatch(c -> c.getUser().getName().equalsIgnoreCase(username));
+
+                if (already) {
+                    log.warn("Rejecting login for '{}' - already connected", username);
+                    connection.close("User already connected");
+                    return;
+                }
+
                 connection.setUser(user);
                 connection.initUser(username);
                 log.info("Login successful for '{}'", username);
@@ -114,47 +116,47 @@ public class ConvoServerHandler extends ConvoHandler {
             connection.sendPacket(new ServerPongPacket(ping.getPayload()));
 
         } else if (msg instanceof ClientListRequestPacket req) {
-            log.info("List request '{}' from {}", req.getType(), connection.getUser().getName());
+            log.debug("List request '{}' from {}", req.getType(), connection.getUser().getName());
             switch (req.getType()) {
                 case CONVO_USERS -> {
                     var all = server.getUsersHandler().getAll();
                     connection.sendPacket(new ServerListResponsePacket(all, true));
-                    log.info("Sent {} users", all.size());
+                    log.debug("Sent {} users", all.size());
                 }
                 case INCOMING_FRIEND_INVITES -> {
                     var invites = server.getFriendsHandler().getIncomingInvites(connection.getUser());
                     connection.sendPacket(new ServerListResponsePacket(req.getType(), invites));
-                    log.info("Sent {} incoming friend invites", invites.size());
+                    log.debug("Sent {} incoming friend invites", invites.size());
                 }
                 case OUTGOING_FRIEND_INVITES -> {
                     var invites = server.getFriendsHandler().getOutgoingInvites(connection.getUser());
                     connection.sendPacket(new ServerListResponsePacket(req.getType(), invites));
-                    log.info("Sent {} outgoing friend invites", invites.size());
+                    log.debug("Sent {} outgoing friend invites", invites.size());
                 }
                 case FRIENDS -> {
                     var friends = server.getFriendsHandler().getFriends(connection.getUser());
                     connection.sendPacket(new ServerListResponsePacket(friends));
-                    log.info("Sent {} friends", friends.size());
+                    log.debug("Sent {} friends", friends.size());
                 }
                 case GROUPS -> {
                     var groups = server.getGroupsHandler().getGroups(connection.getUser(), true);
                     connection.sendPacket(new ServerListResponsePacket(groups, 0));
-                    log.info("Sent {} groups", groups.size());
+                    log.debug("Sent {} groups", groups.size());
                 }
                 case INCOMING_GROUP_INVITES -> {
                     var invites = server.getGroupsHandler().getIncomingInvites(connection.getUser());
                     connection.sendPacket(new ServerListResponsePacket(req.getType(), invites));
-                    log.info("Sent {} incoming group invites", invites.size());
+                    log.debug("Sent {} incoming group invites", invites.size());
                 }
                 case OUTGOING_GROUP_INVITES -> {
                     var invites = server.getGroupsHandler().getOutgoingInvites(req.getGroupName(), connection.getUser());
                     connection.sendPacket(new ServerListResponsePacket(req.getGroupName(), invites));
-                    log.info("Sent {} outgoing group invites for {}", invites.size(), req.getGroupName());
+                    log.debug("Sent {} outgoing group invites for {}", invites.size(), req.getGroupName());
                 }
                 case MESSAGES -> {
                     var msgs = server.getGroupsHandler().getMessages(req.getGroupName(), connection.getUser());
                     connection.sendPacket(new ServerListResponsePacket(msgs, req.getGroupName()));
-                    log.info("Sent {} messages for {}", msgs.size(), req.getGroupName());
+                    log.debug("Sent {} messages for {}", msgs.size(), req.getGroupName());
                 }
                 default -> {
                     log.error("Unknown list type {} from {}", req.getType(), connection.getRemoteAddress());
@@ -174,7 +176,7 @@ public class ConvoServerHandler extends ConvoHandler {
                         ConvoConnection target = server.getHandler().getConnection(invite.getUser());
                         if (target != null) {
                             target.sendPacket(new ServerInviteStatusPacket(invite, ServerInviteStatusPacket.InviteStatus.NEW));
-                            log.info("Notified {} of new invite to {}", invite.getUser().getName(), invite.getGroup().getName());
+                            log.info("Notified {} of new invite to {}", invite.getUser().getName(), invite.getInviter().getName());
                         }
                         connection.sendPacket(new ServerResponsePacket("OK", ResponseType.OK));
                         log.info("Invite created successfully");

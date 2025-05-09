@@ -1,9 +1,5 @@
 package me.vpatel.client;
 
-import me.vpatel.client.ui.LoginUI;
-import me.vpatel.client.ui.MainUI;
-import me.vpatel.client.ui.RegisterUI;
-import me.vpatel.client.ui.UIScreenManager;
 import me.vpatel.network.ConvoConnection;
 import me.vpatel.network.api.ConvoGroup;
 import me.vpatel.network.api.ConvoUser;
@@ -15,122 +11,182 @@ import me.vpatel.network.protocol.server.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ConvoClientHandler extends ConvoHandler {
 
     private static final Logger log = LogManager.getLogger(ConvoClientHandler.class);
-
     private static final ConvoClient client = AppContext.getClient();
+
     private ConvoConnection connection;
+    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
 
-    public ConvoClientHandler() {
+    /** Subscribe to connection events */
+    public void addListener(Listener l) {
+        listeners.add(l);
+    }
+
+    /** Unsubscribe */
+    public void removeListener(Listener l) {
+        listeners.remove(l);
     }
 
     @Override
-    public void join(ConvoConnection connection) {
-        this.connection = connection;
-        log.info("Joined connection: {}", connection);
+    public void join(ConvoConnection conn) {
+        this.connection = conn;
+        log.info("Joined connection: {}", conn);
+        listeners.forEach(l -> l.onConnect(conn));
     }
 
     @Override
-    public void leave(ConvoConnection connection) {
+    public void leave(ConvoConnection conn) {
         this.connection = null;
-        log.info("Connection closed: {}", connection);
+        log.info("Connection closed: {}", conn);
         client.getConsole().shutdown();
+        listeners.forEach(Listener::onDisconnect);
     }
 
     @Override
-    public void handle(ConvoConnection connection, ConvoPacket msg) {
+    public void handle(ConvoConnection conn, ConvoPacket msg) {
         log.debug("Received packet: {}", msg.getClass().getSimpleName());
-        if (msg instanceof ServerLoginFailPacket packet) {
-            log.info("Login failed: {}", packet.getMessage());
-            if (UIScreenManager.getCurrentFrame() instanceof LoginUI ui) {
-                ui.statusLabel.setText(packet.getMessage());
-            }
-        } else if (msg instanceof ServerLoginSuccessPacket packet) {
-            client.setUser(new ConvoUser(packet.getUuid(), packet.getUsername()));
-            log.info("Login successful: {}", client.getUser());
-        } else if (msg instanceof ServerRegisterResponsePacket packet) {
-            if (packet.isSuccess()) {
-                log.info("Registration successful for user");
+
+        // LOGIN FAIL
+        if (msg instanceof ServerLoginFailPacket fail) {
+            log.info("Login failed: {}", fail.getMessage());
+            listeners.forEach(l -> l.onLoginFailed(fail.getMessage()));
+
+            // LOGIN SUCCESS
+        } else if (msg instanceof ServerLoginSuccessPacket success) {
+            ConvoUser user = new ConvoUser(success.getUuid(), success.getUsername());
+            client.setUser(user);
+            log.info("Login successful: {}", user);
+            listeners.forEach(l -> l.onLoginSuccess(user));
+
+            // REGISTER RESPONSE
+        } else if (msg instanceof ServerRegisterResponsePacket reg) {
+            if (reg.isSuccess()) {
+                log.info("Registration succeeded");
+                listeners.forEach(Listener::onRegisterSuccess);
             } else {
-                log.warn("Registration failed for user");
-                if (UIScreenManager.getCurrentFrame() instanceof RegisterUI ui) {
-                    ui.statusLabel.setText("Error occurred registering");
-                }
+                log.warn("Registration failed");
+                listeners.forEach(l -> l.onRegisterFailed(reg.getMessage()));
             }
-        } else if (msg instanceof ServerEncryptionRequestPacket packet) {
-            log.info("Encryption request received, proceeding with auth");
-            client.getAuthHandler().auth(packet, connection);
-        } else if (msg instanceof ServerAuthFinishedPacket packet) {
-            log.info("Authentication finished successfully");
+
+            // ENCRYPTION REQUEST
+        } else if (msg instanceof ServerEncryptionRequestPacket encReq) {
+            log.info("Received encryption request");
+            listeners.forEach(Listener::onEncryptionRequest);
+            client.getAuthHandler().auth(encReq, connection);
+
+            // AUTH FINISHED
+        } else if (msg instanceof ServerAuthFinishedPacket authFin) {
+            log.info("Authentication finished");
             connection.setAuthFinished(true);
-            UIScreenManager.showScreen(new MainUI(AppContext.getClient()));
+            listeners.forEach(Listener::onAuthFinished);
+
+            // NOT AUTHENTICATED
         } else if (!connection.isAuthFinished()) {
-            String error = "Cannot accept packet " + msg + " without being logged in";
-            log.error(error);
-            throw new RuntimeException(error);
-        } else if (msg instanceof ServerPongPacket packet) {
-            log.info("PONG received: {}", packet.getPayload());
-        } else if (msg instanceof ServerResponsePacket packet) {
-            log.info("Server response [{}]: {}", packet.getType(), packet.getMessage());
-        } else if (msg instanceof ServerListResponsePacket packet) {
-            log.info("List response received: {} ({} items)", packet.getType(),
-                    packet.getInvites() != null ? packet.getInvites().size() :
-                            packet.getUsers() != null ? packet.getUsers().size() :
-                                    packet.getFriends() != null ? packet.getFriends().size() : 0);
-            switch (packet.getType()) {
+            log.error("Packet {} before auth, closing", msg.getClass().getSimpleName());
+            connection.close("Not authenticated");
+            listeners.forEach(l -> l.onError("Received " + msg + " before auth"));
+
+            // PONG
+        } else if (msg instanceof ServerPongPacket pong) {
+            log.info("PONG: {}", pong.getPayload());
+            listeners.forEach(l -> l.onPong(pong.getPayload()));
+
+            // GENERIC RESPONSE
+        } else if (msg instanceof ServerResponsePacket resp) {
+            log.info("Response [{}]: {}", resp.getType(), resp.getMessage());
+            listeners.forEach(l -> l.onResponse(resp.getType(), resp.getMessage()));
+
+            // LIST RESPONSE
+        } else if (msg instanceof ServerListResponsePacket list) {
+            log.debug("List {} with {} items", list.getType(),
+                    Optional.ofNullable(list.getUsers()).map(List::size)
+                            .or(() -> Optional.ofNullable(list.getFriends()).map(List::size))
+                            .or(() -> Optional.ofNullable(list.getInvites()).map(List::size))
+                            .orElse(0)
+            );
+            // dispatch by type
+            switch (list.getType()) {
                 case CONVO_USERS -> {
-                    client.getClientApi().setUsers(packet.getUsers());
-                    log.info("Loaded {} users", packet.getUsers().size());
-                }
-                case INCOMING_FRIEND_INVITES -> {
-                    client.getClientApi().setIncomingFriendInvites(packet.getInvites());
-                    log.info("Loaded {} incoming friend invites", packet.getInvites().size());
-                }
-                case OUTGOING_FRIEND_INVITES -> {
-                    client.getClientApi().setOutgoingFriendInvites(packet.getInvites());
-                    log.info("Loaded {} outgoing friend invites", packet.getInvites().size());
+                    client.getClientApi().setUsers(list.getUsers());
+                    listeners.forEach(l -> l.onUsersList(list.getUsers()));
                 }
                 case FRIENDS -> {
-                    client.getClientApi().setFriends(packet.getFriends());
-                    log.info("Loaded {} friends", packet.getFriends().size());
+                    client.getClientApi().setFriends(list.getFriends());
+                    listeners.forEach(l -> l.onFriendsList(list.getFriends()));
+                }
+                case INCOMING_FRIEND_INVITES -> {
+                    client.getClientApi().setIncomingFriendInvites(list.getInvites());
+                    listeners.forEach(l -> l.onIncomingFriendInvites(list.getInvites()));
+                }
+                case OUTGOING_FRIEND_INVITES -> {
+                    client.getClientApi().setOutgoingFriendInvites(list.getInvites());
+                    listeners.forEach(l -> l.onOutgoingFriendInvites(list.getInvites()));
                 }
                 case INCOMING_GROUP_INVITES -> {
-                    Map<String, List<Invite>> map = new HashMap<>();
-                    for (Invite invite : packet.getInvites()) {
-                        map.computeIfAbsent(invite.getGroup().getName(), k -> new ArrayList<>()).add(invite);
+                    // build map
+                    Map<String, List<Invite>> inMap = new HashMap<>();
+                    for (Invite i : list.getInvites()) {
+                        inMap.computeIfAbsent(i.getGroup().getName(), k -> new ArrayList<>()).add(i);
                     }
-                    client.getClientApi().setIncomingGroupInvites(map);
-                    log.info("Loaded incoming group invites for {} groups", map.size());
+                    client.getClientApi().setIncomingGroupInvites(inMap);
+                    listeners.forEach(l -> l.onIncomingGroupInvites(inMap));
                 }
                 case OUTGOING_GROUP_INVITES -> {
-                    Map<String, List<Invite>> map = new HashMap<>();
-                    for (Invite invite : packet.getInvites()) {
-                        map.computeIfAbsent(invite.getGroup().getName(), k -> new ArrayList<>()).add(invite);
+                    Map<String, List<Invite>> outMap = new HashMap<>();
+                    for (Invite i : list.getInvites()) {
+                        outMap.computeIfAbsent(i.getGroup().getName(), k -> new ArrayList<>()).add(i);
                     }
-                    client.getClientApi().setOutgoingGroupInvites(map);
-                    log.info("Loaded outgoing group invites for {} groups", map.size());
-                }
-                case MESSAGES -> {
-                    client.getClientApi().getMessages().put(packet.getGroupName(), packet.getMessages());
-                    log.info("Loaded {} messages for group {}", packet.getMessages().size(), packet.getGroupName());
+                    client.getClientApi().setOutgoingGroupInvites(outMap);
+                    listeners.forEach(l -> l.onOutgoingGroupInvites(outMap));
                 }
                 case GROUPS -> {
-                    client.getClientApi().setGroups(packet.getGroups());
-                    log.info("Loaded {} groups", packet.getGroups().size());
+                    client.getClientApi().setGroups(list.getGroups());
+                    listeners.forEach(l -> l.onGroupsList(list.getGroups()));
+                }
+                case MESSAGES -> {
+                    client.getClientApi().getMessages()
+                            .put(list.getGroupName(), list.getMessages());
+                    listeners.forEach(l -> l.onMessages(list.getGroupName(), list.getMessages()));
                 }
             }
+
+            // UNHANDLED
         } else {
-            log.warn("Unhandled packet type: {}", msg.getClass().getSimpleName());
+            log.warn("Unhandled packet: {}", msg.getClass().getSimpleName());
+            listeners.forEach(l -> l.onUnhandled(msg));
         }
     }
 
     public ConvoConnection getConnection() {
         return connection;
+    }
+
+    /** Listener interface for packet-based events */
+    public interface Listener {
+        default void onConnect(ConvoConnection conn) {}
+        default void onDisconnect() {}
+        default void onLoginSuccess(ConvoUser user) {}
+        default void onLoginFailed(String message) {}
+        default void onRegisterSuccess() {}
+        default void onRegisterFailed(String message) {}
+        default void onEncryptionRequest() {}
+        default void onAuthFinished() {}
+        default void onPong(String payload) {}
+        default void onResponse(ServerResponsePacket.ResponseType type, String message) {}
+        default void onUsersList(List<ConvoUser> users) {}
+        default void onFriendsList(List<ConvoUser> friends) {}
+        default void onIncomingFriendInvites(List<Invite> invites) {}
+        default void onOutgoingFriendInvites(List<Invite> invites) {}
+        default void onIncomingGroupInvites(Map<String,List<Invite>> invites) {}
+        default void onOutgoingGroupInvites(Map<String,List<Invite>> invites) {}
+        default void onGroupsList(List<ConvoGroup> groups) {}
+        default void onMessages(String target, List<Message> messages) {}
+        default void onUnhandled(ConvoPacket packet) {}
+        default void onError(String error) {}
     }
 }

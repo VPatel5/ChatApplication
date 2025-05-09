@@ -42,6 +42,11 @@ public class ClientApi {
         }
     }
 
+    public void chat(ConvoUser user, String message) {
+        client.getHandler().getConnection()
+                .sendPacket(new ClientChatPacket(message, user.getId()));
+    }
+
     public void groupChat(String groupName, String message) {
         client.getHandler().getConnection()
                 .sendPacket(new ClientChatPacket(message, groupName));
