@@ -72,7 +72,7 @@ public class WebUI extends Application {
             Platform.exit();
             System.exit(0);
         });
-        
+
         stage.show();
     }
 

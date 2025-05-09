@@ -227,6 +227,21 @@ public class ConvoServerHandler extends ConvoHandler {
                 }
             }
             connection.sendPacket(new ServerResponsePacket(status, "OK".equals(status) ? ResponseType.OK : ResponseType.ERROR));
+        } else if (msg instanceof ClientChatPacket packet) {
+            if (packet.getMessageType() == ClientChatPacket.MessageType.USER) {
+                ConvoUser user = server.getUsersHandler().getUser(packet.getUser());
+                if (user == null) {
+                    connection.sendPacket(new ServerResponsePacket("Unknown user", ResponseType.WARNING));
+                } else {
+                    String response = server.getFriendsHandler().chat(connection.getUser(), user, packet.getMessage());
+                    connection.sendPacket(new ServerResponsePacket(response, "Send".equals(response) ? ResponseType.OK : ResponseType.WARNING));
+                }
+            } else if (packet.getMessageType() == ClientChatPacket.MessageType.GROUP) {
+                String response = server.getGroupsHandler().chat(packet.getName(), connection.getUser(), packet.getMessage());
+                connection.sendPacket(new ServerResponsePacket(response, "Send".equals(response) ? ResponseType.OK : ResponseType.WARNING));
+            } else {
+                connection.sendPacket(new ServerResponsePacket("Unknown message type", ResponseType.ERROR));
+            }
         }
     }
 
