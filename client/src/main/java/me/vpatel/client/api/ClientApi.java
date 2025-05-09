@@ -37,9 +37,11 @@ public class ClientApi {
     private List<Message> directMessages = new ArrayList<>();
 
     public void chat(String friendName, String message) {
-        log.info("Sending {} message: {}", friendName, message);
+        log.info("Attempting to send {} message: {}", friendName, message);
+        log.info("Friends: {}", friends);
         for (ConvoUser friend : this.getFriends()) {
             if (friend.getName().equals(friendName)) {
+                log.info("Sending {} message: {}", friend.getId(), message);
                 client.getHandler().getConnection()
                         .sendPacket(new ClientDirectMessagePacket(message, friend.getId()));
                 return;

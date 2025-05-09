@@ -81,7 +81,7 @@ public class ConvoServerHandler extends ConvoHandler {
             log.info("Registration attempt from {} as '{}'", connection.getRemoteAddress(), username);
 
             boolean exists = connections.stream()
-                    .filter(c -> c.getUser() != null)
+                    .filter(c -> c.getUser() != null && c.getUser().getName() != null)
                     .anyMatch(c -> c.getUser().getName().equalsIgnoreCase(username));
             if (exists) {
                 log.warn("Rejecting registration for '{}' - already connected", username);
@@ -234,6 +234,7 @@ public class ConvoServerHandler extends ConvoHandler {
                 connection.sendPacket(new ServerResponsePacket(response, "Send".equals(response) ? ResponseType.OK : ResponseType.WARNING));
             }
         } else if (msg instanceof ClientGroupMessagePacket packet) {
+            log.info("Received ClientGMPacket Type {}", packet.getMessageType());
             String response = server.getGroupsHandler().chat(packet.getName(), connection.getUser(), packet.getMessage());
             connection.sendPacket(new ServerResponsePacket(response, "Send".equals(response) ? ResponseType.OK : ResponseType.WARNING));
         }

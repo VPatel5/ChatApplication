@@ -158,10 +158,13 @@ public class ConvoClientHandler extends ConvoHandler {
         } else if (msg instanceof ServerGroupMessagesReponsePacket packet) {
             client.getClientApi().getGroupMessages().put(packet.getGroupName(), packet.getMessages());
             listeners.forEach(l -> l.onGroupMessages(packet.getGroupName(), packet.getMessages()));
-        } else if (msg instanceof ServerDirectMessagePacket packet) {
+        } else if (msg instanceof ServerDirectMessagePacket) {
             client.getClientApi().requestDirectMessages();
         } else if (msg instanceof ServerGroupMessagePacket packet) {
             client.getClientApi().requestGroupMessages(packet.getName());
+        }
+        else if (msg instanceof ServerInviteStatusPacket) {
+            requestAllLists();
         }
         else {
             log.warn("Unhandled packet: {}", msg.getClass().getSimpleName());

@@ -11,7 +11,7 @@ body, html { height: 100%; font-family: Arial, sans-serif; }
 #search-input { width: 100%; padding: 8px; border-radius: 4px; border: none; }
 .list { flex: 1; overflow-y: auto; list-style: none; }
 .list.hidden { display: none; }
-.list li { padding: 10px 12px; cursor: pointer; }
+.list li { padding: 10px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
 .list li:hover { background: #40444b; }
 .action-btn { margin: 8px 12px; padding: 8px; background: #7289da; border: none; border-radius: 4px; color: white; cursor: pointer; }
 .action-btn:hover { background: #5b6eae; }
@@ -25,3 +25,43 @@ body, html { height: 100%; font-family: Arial, sans-serif; }
 #chat-input { flex: 1; padding: 8px; border: none; border-radius: 4px; margin-right: 8px; }
 #chat-send-btn { padding: 8px 16px; background: #7289da; border: none; border-radius: 4px; color: white; cursor: pointer; }
 #chat-send-btn:hover { background: #5b6eae; }
+
+/* Friend-Request Panel */
+#friends-panel {
+  width: 260px;
+  background: #2f3136;
+  color: #dcddde;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+#friends-panel h4 { margin-bottom: 8px; }
+#friends-panel input {
+  width: 100%; padding: 8px; border: none; border-radius: 4px; margin-bottom: 8px;
+}
+#friends-panel button {
+  width: 100%; padding: 8px; border: none; border-radius: 4px;
+  background: #7289da; color: white; cursor: pointer; margin-bottom: 8px;
+}
+#friends-panel button:hover { background: #5b6eae; }
+#friend-requests {
+  flex: 1; overflow-y: auto; margin-top: 8px;
+}
+#friend-requests div {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px; background: #40444b; border-radius: 4px; margin-bottom: 4px;
+}
+#friend-requests div button {
+  padding: 4px 8px; border: none; border-radius: 4px;
+  background: #7289da; color: white; cursor: pointer; margin-left: 4px;
+}
+#friend-requests div button:hover { background: #5b6eae; }
+
+/* Remove-Friend Button */
+.remove-friend-btn {
+  padding: 4px 8px; background: #f04747; color: white;
+  border: none; border-radius: 4px; cursor: pointer;
+}
+.remove-friend-btn:hover {
+  background: #c23628;
+}

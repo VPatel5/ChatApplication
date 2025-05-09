@@ -19,7 +19,8 @@
         </div>
         <ul id="friends-list" class="list"></ul>
         <ul id="groups-list"  class="list hidden"></ul>
-        <button id="add-group-btn" class="action-btn">Create Group</button>
+        <!-- only visible on Groups tab -->
+        <button id="add-group-btn" class="action-btn hidden">Create Group</button>
     </div>
 
     <!-- Chat Panel -->
@@ -30,6 +31,15 @@
             <input id="chat-input" placeholder="Message..." />
             <button id="chat-send-btn">Send</button>
         </div>
+    </div>
+
+    <!-- Friend-Request Panel -->
+    <div id="friends-panel">
+        <h4>Friends</h4>
+        <input id="friend-request-input" type="text" placeholder="Username"/>
+        <button id="send-request-btn">Add Friend</button>
+        <button id="view-requests-btn">View Requests</button>
+        <div id="friend-requests"></div>
     </div>
 </div>
 
