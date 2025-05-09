@@ -32,12 +32,21 @@ const requestsContainer = document.getElementById('friend-requests');
 const feedbackContainer = document.createElement('div');
 feedbackContainer.id = 'feedback-container';
 document.body.appendChild(feedbackContainer);
+
 function showFeedback(msg) {
   const d = document.createElement('div');
   d.className = 'feedback-toast';
-  d.textContent = msg;
+  d.innerHTML = `
+    <div class="feedback-content">
+      <span class="feedback-icon">!</span>
+      <span class="feedback-message">${msg}</span>
+    </div>
+  `;
   feedbackContainer.appendChild(d);
-  setTimeout(() => d.remove(), 3000);
+  setTimeout(() => {
+    d.style.opacity = '0';
+    setTimeout(() => d.remove(), 300);
+  }, 3000);
 }
 window.showFeedback = showFeedback;
 
@@ -177,6 +186,7 @@ friendsTab.addEventListener('click', () => {
   friendsList.classList.remove('hidden');
   groupsList.classList.add('hidden');
   addGroupBtn.classList.add('hidden');
+  document.getElementById('friends-panel').classList.remove('hidden'); // Show entire panel
   searchInput.placeholder = 'Search friends...';
 });
 
@@ -186,6 +196,7 @@ groupsTab.addEventListener('click', () => {
   groupsList.classList.remove('hidden');
   friendsList.classList.add('hidden');
   addGroupBtn.classList.remove('hidden');
+  document.getElementById('friends-panel').classList.add('hidden'); // Hide entire panel
   searchInput.placeholder = 'Search groups...';
 });
 

@@ -105,6 +105,7 @@ public class ClientApi {
     }
 
     public void createGroup(String groupName) {
+        log.info("Attempting to create group {}", groupName);
         client.getHandler().getConnection()
                 .sendPacket(new ClientActionPacket(groupName, Action.CREATE_GROUP));
     }
