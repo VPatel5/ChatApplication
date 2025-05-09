@@ -35,6 +35,8 @@ const elements = {
     groupActions: {
         container: document.getElementById('group-actions'),
         input: document.getElementById('new-group-name'),
+        viewInvitesBtn: document.getElementById('view-group-invites-btn'),
+        invitesContainer: document.getElementById('group-invites'),
         createBtn: document.getElementById('create-group-btn')
     }
 };
@@ -105,6 +107,27 @@ window.populateGroups = list => {
     });
 };
 
+window.populateGroupInvites = invites => {
+    elements.groupActions.invitesContainer.innerHTML = '';
+    Object.entries(invites).forEach(([group, groupInvites]) => {
+        groupInvites.forEach(invite => {
+            const row = document.createElement('div');
+            row.textContent = `${invite.inviter} invited you to ${group}`;
+
+            const acceptBtn = document.createElement('button');
+            acceptBtn.textContent = 'Accept';
+            acceptBtn.onclick = () => handleGroupInviteResponse(group, true);
+
+            const declineBtn = document.createElement('button');
+            declineBtn.textContent = 'Decline';
+            declineBtn.onclick = () => handleGroupInviteResponse(group, false);
+
+            row.append(acceptBtn, declineBtn);
+            elements.groupActions.invitesContainer.appendChild(row);
+        });
+    });
+};
+
 window.populateFriendRequests = list => {
     incomingFriendInvites = list;
     elements.friendsPanel.requests.innerHTML = '';
@@ -138,8 +161,14 @@ window.populateGroupMessages = ({ group, messages }) => {
 function selectConversation(name, type) {
     currentConversation = name;
     currentType = type;
-    elements.chat.header.textContent = name;
-
+    if (type === 'group')
+    {
+       elements.chat.header.textContent = "Group: " + name;
+    }
+    else
+    {
+        elements.chat.header.textContent = name;
+    }
     window.alert(JSON.stringify({
         action: type === 'friend' ? 'selectFriend' : 'selectGroup',
         target: name
@@ -162,6 +191,14 @@ function handleFriendRequestResponse(inviter, accept) {
     }));
 }
 
+function handleGroupInviteResponse(group, accept) {
+    window.alert(JSON.stringify({
+        action: 'respondGroupInvite',
+        group: group,
+        accept: accept
+    }));
+}
+
 // ─── Tab Switching ─────────────────────────────────────────────────────────
 elements.tabs.friends.addEventListener('click', () => {
     elements.tabs.friends.classList.add('active');
@@ -171,6 +208,16 @@ elements.tabs.friends.addEventListener('click', () => {
     elements.groupActions.container.classList.add('hidden');
     elements.friendsPanel.container.classList.remove('hidden');
     elements.search.placeholder = 'Search friends...';
+
+    window.alert(JSON.stringify({
+        action: 'switchToFriendsTab'
+    }));
+    // Reset conversation
+    currentConversation = null;
+    currentType = null;
+    elements.chat.header.textContent = 'Select a conversation';
+    elements.chat.messages.innerHTML = '';
+    clearAndRenderChat([]);
 });
 
 elements.tabs.groups.addEventListener('click', () => {
@@ -181,6 +228,17 @@ elements.tabs.groups.addEventListener('click', () => {
     elements.groupActions.container.classList.remove('hidden');
     elements.friendsPanel.container.classList.add('hidden');
     elements.search.placeholder = 'Search groups...';
+
+    window.alert(JSON.stringify({
+        action: 'switchToGroupsTab'
+    }));
+
+    currentConversation = null;
+    currentType = null;
+    elements.chat.header.textContent = 'Select a conversation';
+    elements.chat.messages.innerHTML = '';
+    clearAndRenderChat([]);
+
 });
 
 // ─── Event Listeners ───────────────────────────────────────────────────────
@@ -202,6 +260,13 @@ elements.groupActions.createBtn.addEventListener('click', () => {
         groupName: name
     }));
     elements.groupActions.input.value = '';
+});
+
+elements.groupActions.viewInvitesBtn.addEventListener('click', () => {
+    elements.groupActions.invitesContainer.classList.toggle('hidden');
+    window.alert(JSON.stringify({
+        action: 'getGroupInvites'
+    }));
 });
 
 elements.chat.sendBtn.addEventListener('click', sendMessage);
@@ -241,4 +306,11 @@ function sendMessage() {
 
 // Initialize
 elements.tabs.friends.click();
+
 window.showFeedback = showFeedback;
+window.populateFriends = populateFriends;
+window.populateGroups = populateGroups;
+window.populateGroupInvites = populateGroupInvites;
+window.populateFriendRequests = populateFriendRequests;
+window.populateDirectMessages = populateDirectMessages;
+window.populateGroupMessages = populateGroupMessages;

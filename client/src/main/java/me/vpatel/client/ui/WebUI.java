@@ -19,6 +19,7 @@ import me.vpatel.network.protocol.server.ServerResponsePacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -232,13 +233,18 @@ public class WebUI extends Application {
                     break;
                 }
 
+                case "switchToFriendsTab", "switchToGroupsTab":
+                    currentConversation = null;
+                    currentType = null;
+                    break;
+
                 case "selectGroup": {
                     currentConversation = (String) cmd.get("target");
                     currentType = "group";
                     List<String> messages = api.getGroupMessages()
                             .getOrDefault(currentConversation, List.of()).stream()
                             .map(m -> m.getSender().getName() + ": " + m.getMessage())
-                            .collect(Collectors.toList());
+                            .toList();
                     runJS("populateGroupMessages", Map.of(
                             "group", currentConversation,
                             "messages", messages
