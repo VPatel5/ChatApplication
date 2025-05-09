@@ -67,6 +67,12 @@ public class WebUI extends Application {
 
         stage.setScene(new Scene(webView, 900, 600));
         stage.setTitle("Convo Chat");
+
+        stage.setOnCloseRequest(event -> {
+            Platform.exit();
+            System.exit(0);
+        });
+        
         stage.show();
     }
 
