@@ -19,10 +19,12 @@ import me.vpatel.network.protocol.server.ServerResponsePacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class WebUI extends Application {
     private static final Logger log = LogManager.getLogger(WebUI.class);
@@ -44,86 +46,68 @@ public class WebUI extends Application {
         engine = webView.getEngine();
         engine.setOnAlert(evt -> handleCommand(evt.getData()));
 
-        // 1) show login / register
+        // show login, then index
         engine.load(getClass().getResource("/ui/login.html").toExternalForm());
 
-        // 2) on auth, fetch *all* data and swap to index.html
         client.getHandler().addListener(new ConvoClientHandler.Listener() {
             @Override
             public void onAuthFinished() {
                 startDataRefreshTimer();
-                Platform.runLater(() ->
-                        engine.load(getClass().getResource("/ui/index.html").toExternalForm())
-                );
-            }
-
-            @Override
-            public void onUsersList(List<ConvoUser> list) {
-                runJS("populateUsers",
-                        list.stream().map(ConvoUser::getName).toArray(String[]::new));
+                Platform.runLater(() -> engine.load(getClass().getResource("/ui/index.html").toExternalForm()));
             }
 
             @Override
             public void onFriendsList(List<ConvoUser> list) {
-                runJS("populateFriends",
-                        list.stream().map(ConvoUser::getName).toArray(String[]::new));
+                runJS("populateFriends", list.stream().map(ConvoUser::getName).collect(Collectors.toList()));
             }
 
             @Override
             public void onGroupsList(List<ConvoGroup> list) {
-                runJS("populateGroups",
-                        list.stream().map(ConvoGroup::getName).toArray(String[]::new));
+                runJS("populateGroups", list.stream().map(ConvoGroup::getName).collect(Collectors.toList()));
             }
 
             @Override
             public void onIncomingFriendInvites(List<Invite> list) {
-                runJS("populateFriendRequests",
-                        list.stream()
-                                .map(inv -> inv.getInviter().getName())
-                                .toArray(String[]::new));
-            }
-
-            @Override
-            public void onOutgoingFriendInvites(List<Invite> list) {
-                runJS("populateOutgoingFriendRequests",
-                        list.stream()
-                                .map(Invite::getInviter)
-                                .map(ConvoUser::getName)
-                                .toArray(String[]::new));
+                runJS("populateFriendRequests", list.stream()
+                        .map(inv -> inv.getInviter().getName())
+                        .collect(Collectors.toList()));
             }
 
             @Override
             public void onIncomingGroupInvites(Map<String, List<Invite>> invites) {
-                // No UI update needed unless viewing group invites
-            }
-
-            @Override
-            public void onOutgoingGroupInvites(Map<String, List<Invite>> invites) {
-                // No UI update needed unless viewing group invites
+                runJS("populateGroupInvites", invites.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> e.getValue().stream()
+                                        .map(inv -> Map.of(
+                                                "group", e.getKey(),
+                                                "inviter", inv.getInviter().getName()
+                                        ))
+                                        .collect(Collectors.toList())
+                        )));
             }
 
             @Override
             public void onDirectMessages(List<Message> msgs) {
                 if ("friend".equals(currentType)) {
-
-                    List<String> lines = api.getDirectMessages().stream()
-                            .filter(m -> m.getSender().getName().equals(currentConversation)
-                                    || m.getRecipient().getName().equals(currentConversation))
+                    List<String> messages = api.getDirectMessages().stream()
+                            .filter(m -> m.getSender().getName().equals(currentConversation) ||
+                                    m.getRecipient().getName().equals(currentConversation))
                             .map(m -> m.getSender().getName() + ": " + m.getMessage())
                             .toList();
-                    runJS("populateDirectMessages", lines.toArray(String[]::new));
+                    runJS("populateDirectMessages", messages);
                 }
             }
 
             @Override
             public void onGroupMessages(String group, List<Message> msgs) {
                 if ("group".equals(currentType) && group.equals(currentConversation)) {
-                    List<String> lines = msgs.stream()
+                    List<String> messages = msgs.stream()
                             .map(m -> m.getSender().getName() + ": " + m.getMessage())
                             .toList();
                     runJS("populateGroupMessages", Map.of(
                             "group", group,
-                            "messages", lines.toArray(new String[0])
+                            "messages", messages
                     ));
                 }
             }
@@ -137,16 +121,9 @@ public class WebUI extends Application {
         stage.setScene(new Scene(webView, 900, 600));
         stage.setTitle("Convo Chat");
         stage.setOnCloseRequest(e -> {
-            if (client.getHandler().getConnection() != null)
-            {
-                client.getHandler().getConnection().close("Shutdown");
-            }
-            if (scheduler1 != null) {
-                scheduler1.shutdown();
-            }
-            if (scheduler2 != null) {
-                scheduler2.shutdown();
-            }
+            if (client.getHandler().getConnection() != null) client.getHandler().getConnection().close("Shutdown");
+            if (scheduler1 != null) scheduler1.shutdown();
+            if (scheduler2 != null) scheduler2.shutdown();
             Platform.exit();
             System.exit(0);
         });
@@ -154,121 +131,181 @@ public class WebUI extends Application {
     }
 
     private void startDataRefreshTimer() {
-        if (scheduler1 != null) {
-            scheduler1.shutdown();
-        }
+        if (scheduler1 != null) scheduler1.shutdown();
         scheduler1 = Executors.newSingleThreadScheduledExecutor();
-        scheduler1.scheduleAtFixedRate(() -> {
-            client.getHandler().requestAllLists();
-        }, 0, 2000, TimeUnit.MILLISECONDS);
+        scheduler1.scheduleAtFixedRate(() -> client.getHandler().requestAllLists(), 0, 2, TimeUnit.SECONDS);
 
-        if (scheduler2 != null) {
-            scheduler2.shutdown();
-        }
+        if (scheduler2 != null) scheduler2.shutdown();
         scheduler2 = Executors.newSingleThreadScheduledExecutor();
-        scheduler2.scheduleAtFixedRate(() -> {
-            api.requestDirectMessages();
-        }, 0, 1000, TimeUnit.MILLISECONDS);
+        scheduler2.scheduleAtFixedRate(() -> api.requestDirectMessages(), 0, 1, TimeUnit.SECONDS);
     }
 
     @SuppressWarnings("unchecked")
     private void handleCommand(String data) {
-        Map<String, Object> cmd = gson.fromJson(data, Map.class);
-        String action = (String) cmd.get("action");
+        try {
+            Map<String, Object> cmd = gson.fromJson(data, Map.class);
+            String action = (String) cmd.get("action");
 
-        switch (action) {
-            case "login" -> client.getAuthHandler().login(
-                    (String) cmd.get("username"),
-                    (String) cmd.get("password")
-            );
-            case "openRegister" -> Platform.runLater(() ->
-                    engine.load(getClass().getResource("/ui/register.html").toExternalForm())
-            );
-            case "register" -> client.getAuthHandler().registerUser(
-                    (String) cmd.get("username"),
-                    (String) cmd.get("password"),
-                    (String) cmd.get("email")
-            );
-            case "openLogin" -> Platform.runLater(() ->
-                    engine.load(getClass().getResource("/ui/login.html").toExternalForm())
-            );
+            switch (action) {
+                case "login":
+                    client.getAuthHandler().login(
+                            (String) cmd.get("username"),
+                            (String) cmd.get("password")
+                    );
+                    break;
 
-            case "searchFriends",
-                    "listFriends" -> runJS("populateFriends",
-                    api.getFriends().stream().map(ConvoUser::getName).toArray(String[]::new));
+                case "openRegister":
+                    Platform.runLater(() -> engine.load(getClass().getResource("/ui/register.html").toExternalForm()));
+                    break;
 
-            case "searchGroups",
-                    "listGroups" -> runJS("populateGroups",
-                    api.getGroups().stream().map(ConvoGroup::getName).toArray(String[]::new));
+                case "register":
+                    client.getAuthHandler().registerUser(
+                            (String) cmd.get("username"),
+                            (String) cmd.get("password"),
+                            (String) cmd.get("email")
+                    );
+                    break;
 
-            case "createGroup" -> {
-                String name = (String) cmd.get("groupName");
-                api.createGroup(name);
-            }
+                case "openLogin":
+                    Platform.runLater(() -> engine.load(getClass().getResource("/ui/login.html").toExternalForm()));
+                    break;
 
-            case "selectFriend" -> {
-                currentConversation = (String) cmd.get("target");
-                currentType = "friend";
-                List<String> lines = api.getDirectMessages().stream()
-                        .filter(m -> m.getSender().getName().equals(currentConversation)
-                                || m.getRecipient().getName().equals(currentConversation))
-                        .map(m -> m.getSender().getName() + ": " + m.getMessage())
-                        .toList();
-                runJS("populateDirectMessages", lines.toArray(String[]::new));
-            }
-            case "selectGroup" -> {
-                currentConversation = (String) cmd.get("target");
-                currentType = "group";
-                List<String> lines = api.getGroupMessages().getOrDefault(currentConversation, List.of())
-                        .stream()
-                        .map(m -> m.getSender().getName() + ": " + m.getMessage())
-                        .toList();
-                runJS("populateGroupMessages", Map.of(
-                        "group", currentConversation,
-                        "messages", lines.toArray(new String[0])
-                ));
-            }
+                case "listFriends":
+                case "searchFriends":
+                    runJS("populateFriends", api.getFriends().stream()
+                            .map(ConvoUser::getName)
+                            .collect(Collectors.toList()));
+                    break;
 
-            case "sendFriendMessage" -> {
-                String tgt = (String) cmd.get("target");
-                String msg = (String) cmd.get("message");
-                api.chat(tgt, msg);
-            }
-            case "sendGroupMessage" -> {
-                String grp = (String) cmd.get("target");
-                String msg = (String) cmd.get("message");
-                api.groupChat(grp, msg);
-            }
+                case "listGroups":
+                case "searchGroups":
+                    runJS("populateGroups", api.getGroups().stream()
+                            .map(ConvoGroup::getName)
+                            .collect(Collectors.toList()));
+                    break;
 
-            case "removeFriend" -> {
-                String u = (String) cmd.get("target");
-                api.removeFriend(u);
-            }
+                case "createGroup":
+                    api.createGroup((String) cmd.get("groupName"));
+                    break;
 
-            case "sendFriendRequest" -> {
-                String u = (String) cmd.get("target");
-                api.sendFriendInvite(u);
-            }
-            case "getFriendRequests" -> runJS("populateFriendRequests",
-                    api.getIncomingFriendInvites().stream()
-                            .map(i -> i.getInviter().getName())
-                            .toArray(String[]::new));
-            case "respondFriendRequest" -> {
-                String u = (String) cmd.get("target");
-                boolean accept = (Boolean) cmd.get("accept");
-                if (accept) {
-                    api.acceptFriendInvite(u);
-                } else {
-                    api.declineFriendInvite(u);
+                case "getGroupInvites":
+                    runJS("populateGroupInvites", api.getIncomingGroupInvites().entrySet().stream()
+                            .collect(Collectors.toMap(
+                                    Map.Entry::getKey,
+                                    e -> e.getValue().stream()
+                                            .map(inv -> Map.of(
+                                                    "group", e.getKey(),
+                                                    "inviter", inv.getInviter().getName()
+                                            ))
+                                            .collect(Collectors.toList())
+                            )));
+                    break;
+
+                case "inviteToGroup":
+                    api.sendGroupInvite(
+                            currentConversation,
+                            (String) cmd.get("friend")
+                    );
+                    break;
+
+                case "respondGroupInvite": {
+                    boolean accept = (Boolean) cmd.get("accept");
+                    String grp = (String) cmd.get("group");
+                    if (accept) {
+                        api.acceptGroupInvite(grp);
+                    } else {
+                        api.declineGroupInvite(grp);
+                    }
+                    break;
                 }
-            }
 
-            default -> log.warn("Unknown action: {}", action);
+                case "selectFriend": {
+                    currentConversation = (String) cmd.get("target");
+                    currentType = "friend";
+                    List<String> messages = api.getDirectMessages().stream()
+                            .filter(m -> m.getSender().getName().equals(currentConversation) ||
+                                    m.getRecipient().getName().equals(currentConversation))
+                            .map(m -> m.getSender().getName() + ": " + m.getMessage())
+                            .collect(Collectors.toList());
+                    runJS("populateDirectMessages", messages);
+                    runJS("showFeedback", "Now chatting with " + currentConversation);
+                    break;
+                }
+
+                case "selectGroup": {
+                    currentConversation = (String) cmd.get("target");
+                    currentType = "group";
+                    List<String> messages = api.getGroupMessages()
+                            .getOrDefault(currentConversation, List.of()).stream()
+                            .map(m -> m.getSender().getName() + ": " + m.getMessage())
+                            .collect(Collectors.toList());
+                    runJS("populateGroupMessages", Map.of(
+                            "group", currentConversation,
+                            "messages", messages
+                    ));
+                    break;
+                }
+
+                case "sendFriendMessage":
+                    api.chat(
+                            (String) cmd.get("target"),
+                            (String) cmd.get("message")
+                    );
+                    break;
+
+                case "sendGroupMessage":
+                    api.groupChat(
+                            (String) cmd.get("target"),
+                            (String) cmd.get("message")
+                    );
+                    break;
+
+                case "removeFriend":
+                    api.removeFriend((String) cmd.get("target"));
+                    break;
+
+                case "sendFriendRequest":
+                    api.sendFriendInvite((String) cmd.get("target"));
+                    break;
+
+                case "getFriendRequests":
+                    runJS("populateFriendRequests", api.getIncomingFriendInvites().stream()
+                            .map(i -> i.getInviter().getName())
+                            .collect(Collectors.toList()));
+                    break;
+
+                case "respondFriendRequest": {
+                    String u = (String) cmd.get("target");
+                    boolean accept = (Boolean) cmd.get("accept");
+                    if (accept) {
+                        api.acceptFriendInvite(u);
+                    } else {
+                        api.declineFriendInvite(u);
+                    }
+                    break;
+                }
+
+                default:
+                    log.warn("Unknown action: {}", action);
+            }
+        } catch (Exception e) {
+            log.error("Error handling command", e);
+            runJS("showFeedback", "Error processing your request");
         }
     }
 
     private void runJS(String fn, Object arg) {
-        String json = gson.toJson(arg);
-        Platform.runLater(() -> engine.executeScript(fn + "(" + json + ")"));
+        try {
+            String json = gson.toJson(arg);
+            Platform.runLater(() -> {
+                try {
+                    engine.executeScript(fn + "(" + json + ")");
+                } catch (Exception e) {
+                    log.error("Error executing JS function: " + fn, e);
+                }
+            });
+        } catch (Exception e) {
+            log.error("Error preparing JS call", e);
+        }
     }
 }

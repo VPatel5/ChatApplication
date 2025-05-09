@@ -1,258 +1,244 @@
-//
-// app.js
-//
-
 // ─── In-memory stores ───────────────────────────────────────────────────────
-let users                    = [];
-let friends                  = [];
-let groups                   = [];
-let incomingFriendInvites    = [];
-let outgoingFriendInvites    = [];
-let incomingGroupInvites     = {};
-let outgoingGroupInvites     = {};
-let directMessages           = [];
-let groupMessages            = {};
+let users = [];
+let friends = [];
+let groups = [];
+let incomingFriendInvites = [];
+let directMessages = [];
+let groupMessages = {};
+let currentConversation = null;
+let currentType = null;
 
 // ─── DOM refs ───────────────────────────────────────────────────────────────
-const friendsTab        = document.getElementById('friends-tab');
-const groupsTab         = document.getElementById('groups-tab');
-const searchInput       = document.getElementById('search-input');
-const friendsList       = document.getElementById('friends-list');
-const groupsList        = document.getElementById('groups-list');
-const addGroupBtn       = document.getElementById('add-group-btn');
-const chatHeader        = document.getElementById('chat-header');
-const chatMessages      = document.getElementById('chat-messages');
-const chatInput         = document.getElementById('chat-input');
-const chatSendBtn       = document.getElementById('chat-send-btn');
-const sendRequestBtn    = document.getElementById('send-request-btn');
-const viewRequestsBtn   = document.getElementById('view-requests-btn');
-const requestsContainer = document.getElementById('friend-requests');
+const elements = {
+    tabs: {
+        friends: document.getElementById('friends-tab'),
+        groups: document.getElementById('groups-tab')
+    },
+    lists: {
+        friends: document.getElementById('friends-list'),
+        groups: document.getElementById('groups-list')
+    },
+    search: document.getElementById('search-input'),
+    chat: {
+        header: document.getElementById('chat-header'),
+        messages: document.getElementById('chat-messages'),
+        input: document.getElementById('chat-input'),
+        sendBtn: document.getElementById('chat-send-btn')
+    },
+    friendsPanel: {
+        container: document.getElementById('friends-panel'),
+        input: document.getElementById('friend-request-input'),
+        sendBtn: document.getElementById('send-request-btn'),
+        viewBtn: document.getElementById('view-requests-btn'),
+        requests: document.getElementById('friend-requests')
+    },
+    groupActions: {
+        container: document.getElementById('group-actions'),
+        input: document.getElementById('new-group-name'),
+        createBtn: document.getElementById('create-group-btn')
+    }
+};
 
-// ─── Feedback (toasts) ─────────────────────────────────────────────────────
+// ─── Initialize Feedback System ────────────────────────────────────────────
 const feedbackContainer = document.createElement('div');
 feedbackContainer.id = 'feedback-container';
 document.body.appendChild(feedbackContainer);
 
+// ─── UI Functions ──────────────────────────────────────────────────────────
 function showFeedback(msg) {
-  const d = document.createElement('div');
-  d.className = 'feedback-toast';
-  d.innerHTML = `
-    <div class="feedback-content">
-      <span class="feedback-icon">!</span>
-      <span class="feedback-message">${msg}</span>
-    </div>
-  `;
-  feedbackContainer.appendChild(d);
-  setTimeout(() => {
-    d.style.opacity = '0';
-    setTimeout(() => d.remove(), 300);
-  }, 3000);
+    const toast = document.createElement('div');
+    toast.className = 'feedback-toast';
+    toast.innerHTML = `
+        <div class="feedback-content">
+            <span class="feedback-icon">!</span>
+            <span class="feedback-message">${msg}</span>
+        </div>
+    `;
+    feedbackContainer.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
-window.showFeedback = showFeedback;
 
-// ─── UI helpers ────────────────────────────────────────────────────────────
 function addMessage(line) {
-  const div = document.createElement('div');
-  div.textContent = line;
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+    const div = document.createElement('div');
+    div.textContent = line;
+    elements.chat.messages.appendChild(div);
+    elements.chat.messages.scrollTop = elements.chat.messages.scrollHeight;
 }
 
 function clearAndRenderChat(lines) {
-  chatMessages.innerHTML = '';
-  if (Array.isArray(lines)) {
-    lines.forEach(addMessage);
-  }
+    elements.chat.messages.innerHTML = '';
+    if (Array.isArray(lines)) lines.forEach(addMessage);
 }
 
-// ─── Populate functions (called by Java) ─────────────────────────────────
-function populateUsers(list) {
-  users = list;
-}
-window.populateUsers = populateUsers;
+// ─── Data Population Functions ─────────────────────────────────────────────
+window.populateFriends = list => {
+    friends = list;
+    elements.lists.friends.innerHTML = '';
+    friends.forEach(name => {
+        const li = document.createElement('li');
+        const span = document.createElement('span');
+        span.textContent = name;
+        span.onclick = () => selectConversation(name, 'friend');
+        const rem = document.createElement('button');
+        rem.textContent = 'Remove';
+        rem.className = 'remove-friend-btn';
+        rem.onclick = e => {
+            e.stopPropagation();
+            handleRemoveFriend(name);
+        };
+        li.append(span, rem);
+        elements.lists.friends.appendChild(li);
+    });
+};
 
-function populateFriends(list) {
-  friends = list;
-  friendsList.innerHTML = '';
-  friends.forEach(name => {
-    const li = document.createElement('li');
-    const span = document.createElement('span');
-    span.textContent = name;
-    span.onclick = () => selectConversation(name, 'friend');
-    const rem = document.createElement('button');
-    rem.textContent = 'Remove';
-    rem.className = 'remove-friend-btn';
-    rem.onclick = e => {
-      e.stopPropagation();
-      handleRemoveFriend(name);
-    };
-    li.append(span, rem);
-    friendsList.appendChild(li);
-  });
-}
-window.populateFriends = populateFriends;
+window.populateGroups = list => {
+    groups = list;
+    elements.lists.groups.innerHTML = '';
+    groups.forEach(name => {
+        const li = document.createElement('li');
+        li.textContent = name;
+        li.onclick = () => selectConversation(name, 'group');
+        elements.lists.groups.appendChild(li);
+    });
+};
 
-function populateGroups(list) {
-  groups = list;
-  groupsList.innerHTML = '';
-  groups.forEach(name => {
-    const li = document.createElement('li');
-    li.textContent = name;
-    li.onclick = () => selectConversation(name, 'group');
-    groupsList.appendChild(li);
-  });
-}
-window.populateGroups = populateGroups;
+window.populateFriendRequests = list => {
+    incomingFriendInvites = list;
+    elements.friendsPanel.requests.innerHTML = '';
+    incomingFriendInvites.forEach(inviter => {
+        const row = document.createElement('div');
+        row.textContent = inviter + ' ';
+        const acc = document.createElement('button');
+        acc.textContent = 'Accept';
+        acc.onclick = () => handleFriendRequestResponse(inviter, true);
+        const dec = document.createElement('button');
+        dec.textContent = 'Decline';
+        dec.onclick = () => handleFriendRequestResponse(inviter, false);
+        row.append(acc, dec);
+        elements.friendsPanel.requests.appendChild(row);
+    });
+};
 
-function populateIncomingFriendInvites(list) {
-  incomingFriendInvites = list;
-  requestsContainer.innerHTML = '';
-  incomingFriendInvites.forEach(inviter => {
-    const row = document.createElement('div');
-    row.textContent = inviter + ' ';
-    const acc = document.createElement('button');
-    acc.textContent = 'Accept';
-    acc.onclick = () => handleFriendRequestResponse(inviter, true);
-    const dec = document.createElement('button');
-    dec.textContent = 'Decline';
-    dec.onclick = () => handleFriendRequestResponse(inviter, false);
-    row.append(acc, dec);
-    requestsContainer.appendChild(row);
-  });
-}
-window.populateFriendRequests = populateIncomingFriendInvites;
+window.populateDirectMessages = lines => {
+    directMessages = lines;
+    clearAndRenderChat(lines);
+};
 
-function populateOutgoingFriendRequests(list) {
-  outgoingFriendInvites = list;
-}
-window.populateOutgoingFriendRequests = populateOutgoingFriendRequests;
+window.populateGroupMessages = ({ group, messages }) => {
+    groupMessages[group] = messages;
+    if (currentConversation === group && currentType === 'group') {
+        clearAndRenderChat(messages);
+    }
+};
 
-function populateDirectMessages(lines) {
-  directMessages = lines;
-  clearAndRenderChat(lines);
-}
-window.populateDirectMessages = populateDirectMessages;
-
-function populateGroupMessages({ group, messages }) {
-  groupMessages[group] = messages;
-  if (currentConversation === group && currentType === 'group') {
-    clearAndRenderChat(messages);
-  }
-}
-window.populateGroupMessages = populateGroupMessages;
-
-// ─── Conversation selection ────────────────────────────────────────────────
-let currentConversation, currentType;
+// ─── Conversation Management ───────────────────────────────────────────────
 function selectConversation(name, type) {
-  currentConversation = name;
-  currentType = type;
-  chatHeader.textContent = name;
+    currentConversation = name;
+    currentType = type;
+    elements.chat.header.textContent = name;
 
-  if (type === 'friend') {
-    // Request messages for this friend
     window.alert(JSON.stringify({
-      action: 'selectFriend',
-      target: name
+        action: type === 'friend' ? 'selectFriend' : 'selectGroup',
+        target: name
     }));
-  } else {
-    // Request messages for this group
-    window.alert(JSON.stringify({
-      action: 'selectGroup',
-      target: name
-    }));
-  }
 }
 
-// ─── Action handlers ──────────────────────────────────────────────────────
+// ─── Action Handlers ───────────────────────────────────────────────────────
 function handleRemoveFriend(name) {
-  window.alert(JSON.stringify({
-    action: 'removeFriend',
-    target: name
-  }));
+    window.alert(JSON.stringify({
+        action: 'removeFriend',
+        target: name
+    }));
 }
 
 function handleFriendRequestResponse(inviter, accept) {
-  window.alert(JSON.stringify({
-    action: 'respondFriendRequest',
-    target: inviter,
-    accept: accept
-  }));
+    window.alert(JSON.stringify({
+        action: 'respondFriendRequest',
+        target: inviter,
+        accept: accept
+    }));
 }
 
-// ─── Tabs ─────────────────────────────────────────────────────────────────
-friendsTab.addEventListener('click', () => {
-  friendsTab.classList.add('active');
-  groupsTab.classList.remove('active');
-  friendsList.classList.remove('hidden');
-  groupsList.classList.add('hidden');
-  addGroupBtn.classList.add('hidden');
-  document.getElementById('friends-panel').classList.remove('hidden'); // Show entire panel
-  searchInput.placeholder = 'Search friends...';
+// ─── Tab Switching ─────────────────────────────────────────────────────────
+elements.tabs.friends.addEventListener('click', () => {
+    elements.tabs.friends.classList.add('active');
+    elements.tabs.groups.classList.remove('active');
+    elements.lists.friends.classList.remove('hidden');
+    elements.lists.groups.classList.add('hidden');
+    elements.groupActions.container.classList.add('hidden');
+    elements.friendsPanel.container.classList.remove('hidden');
+    elements.search.placeholder = 'Search friends...';
 });
 
-groupsTab.addEventListener('click', () => {
-  groupsTab.classList.add('active');
-  friendsTab.classList.remove('active');
-  groupsList.classList.remove('hidden');
-  friendsList.classList.add('hidden');
-  addGroupBtn.classList.remove('hidden');
-  document.getElementById('friends-panel').classList.add('hidden'); // Hide entire panel
-  searchInput.placeholder = 'Search groups...';
+elements.tabs.groups.addEventListener('click', () => {
+    elements.tabs.groups.classList.add('active');
+    elements.tabs.friends.classList.remove('active');
+    elements.lists.groups.classList.remove('hidden');
+    elements.lists.friends.classList.add('hidden');
+    elements.groupActions.container.classList.remove('hidden');
+    elements.friendsPanel.container.classList.add('hidden');
+    elements.search.placeholder = 'Search groups...';
 });
 
-// ─── Search ────────────────────────────────────────────────────────────────
-searchInput.addEventListener('input', () => {
-  const q = searchInput.value.toLowerCase();
-  const listEl = friendsTab.classList.contains('active') ? friendsList : groupsList;
-  Array.from(listEl.children).forEach(li => {
-    li.style.display = li.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
+// ─── Event Listeners ───────────────────────────────────────────────────────
+elements.search.addEventListener('input', () => {
+    const query = elements.search.value.toLowerCase();
+    const listEl = elements.tabs.friends.classList.contains('active')
+        ? elements.lists.friends
+        : elements.lists.groups;
+    Array.from(listEl.children).forEach(li => {
+        li.style.display = li.textContent.toLowerCase().includes(query) ? '' : 'none';
+    });
 });
 
-// ─── Create Group ─────────────────────────────────────────────────────────
-addGroupBtn.addEventListener('click', () => {
-  const name = prompt('Group name:');
-  if (!name) return;
-  window.alert(JSON.stringify({
-    action: 'createGroup',
-    groupName: name
-  }));
+elements.groupActions.createBtn.addEventListener('click', () => {
+    const name = elements.groupActions.input.value.trim();
+    if (!name) return;
+    window.alert(JSON.stringify({
+        action: 'createGroup',
+        groupName: name
+    }));
+    elements.groupActions.input.value = '';
 });
 
-// ─── Send Message ─────────────────────────────────────────────────────────
-chatSendBtn.addEventListener('click', () => {
-  if (!currentConversation) return;
-  const msg = chatInput.value.trim();
-  if (!msg) return;
-
-  const action = currentType === 'friend' ? 'sendFriendMessage' : 'sendGroupMessage';
-  window.alert(JSON.stringify({
-    action,
-    target: currentConversation,
-    message: msg
-  }));
-  chatInput.value = '';
+elements.chat.sendBtn.addEventListener('click', sendMessage);
+elements.chat.input.addEventListener('keypress', e => {
+    if (e.key === 'Enter') sendMessage();
 });
 
-// Allow sending with Enter key
-chatInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    chatSendBtn.click();
-  }
+elements.friendsPanel.sendBtn.addEventListener('click', () => {
+    const username = elements.friendsPanel.input.value.trim();
+    if (!username) return;
+    window.alert(JSON.stringify({
+        action: 'sendFriendRequest',
+        target: username
+    }));
 });
 
-// ─── Friend Requests ──────────────────────────────────────────────────────
-sendRequestBtn.addEventListener('click', () => {
-  const u = document.getElementById('friend-request-input').value.trim();
-  if (!u) return;
-  window.alert(JSON.stringify({
-    action: 'sendFriendRequest',
-    target: u
-  }));
+elements.friendsPanel.viewBtn.addEventListener('click', () => {
+    window.alert(JSON.stringify({
+        action: 'getFriendRequests'
+    }));
 });
 
-viewRequestsBtn.addEventListener('click', () => {
-  window.alert(JSON.stringify({
-    action: 'getFriendRequests'
-  }));
-});
+// ─── Helper Functions ──────────────────────────────────────────────────────
+function sendMessage() {
+    if (!currentConversation) return;
+    const msg = elements.chat.input.value.trim();
+    if (!msg) return;
+
+    const action = currentType === 'friend' ? 'sendFriendMessage' : 'sendGroupMessage';
+    window.alert(JSON.stringify({
+        action,
+        target: currentConversation,
+        message: msg
+    }));
+    elements.chat.input.value = '';
+}
+
+// Initialize
+elements.tabs.friends.click();
+window.showFeedback = showFeedback;

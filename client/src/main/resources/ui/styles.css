@@ -1,160 +1,309 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body, html { height: 100%; font-family: Arial, sans-serif; }
-#app { display: flex; height: 100%; }
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-/* Sidebar */
-#sidebar { width: 260px; background: #2f3136; color: #dcddde; display: flex; flex-direction: column; }
-#tabs { display: flex; }
-.tab { flex: 1; padding: 12px; cursor: pointer; background: #36393f; border: none; color: #dcddde; font-weight: bold; }
-.tab.active { background: #7289da; }
-#search-section { padding: 8px; background: #2f3136; }
-#search-input { width: 100%; padding: 8px; border-radius: 4px; border: none; }
-.list { flex: 1; overflow-y: auto; list-style: none; }
-.list.hidden { display: none; }
-.list li { padding: 10px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-.list li:hover { background: #40444b; }
-.action-btn { margin: 8px 12px; padding: 8px; background: #7289da; border: none; border-radius: 4px; color: white; cursor: pointer; }
-.action-btn:hover { background: #5b6eae; }
+body, html {
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+#app {
+    display: flex;
+    height: 100%;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Sidebar Styles */
+#sidebar {
+    width: 260px;
+    background: #2f3136;
+    color: #dcddde;
+    display: flex;
+    flex-direction: column;
+}
+
+#tabs {
+    display: flex;
+}
+
+.tab {
+    flex: 1;
+    padding: 12px;
+    cursor: pointer;
+    background: #36393f;
+    border: none;
+    color: #dcddde;
+    font-weight: bold;
+}
+
+.tab.active {
+    background: #7289da;
+}
+
+#search-section {
+    padding: 8px;
+    background: #2f3136;
+}
+
+#search-input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    background: #202225;
+    color: #dcddde;
+}
+
+.list {
+    flex: 1;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.list li {
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list li:hover {
+    background: #40444b;
+}
+
+/* Group Actions */
+#group-actions {
+    padding: 10px;
+    background: #2f3136;
+    border-top: 1px solid #202225;
+}
+
+#create-group-section {
+    display: flex;
+    gap: 8px;
+}
+
+#create-group-section input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    background: #202225;
+    color: #dcddde;
+}
+
+#create-group-btn {
+    padding: 8px 12px;
+    background: #7289da;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+#create-group-btn:hover {
+    background: #677bc4;
+}
 
 /* Chat Panel */
-#chat-panel { flex: 1; display: flex; flex-direction: column; background: #36393f; color: #dcddde; }
-#chat-header { padding: 12px; background: #2f3136; font-weight: bold; }
-#chat-messages { flex: 1; padding: 12px; overflow-y: auto; }
-#chat-messages div { margin-bottom: 8px; }
-#chat-input-section { display: flex; padding: 12px; background: #40444b; }
-#chat-input { flex: 1; padding: 8px; border: none; border-radius: 4px; margin-right: 8px; }
-#chat-send-btn { padding: 8px 16px; background: #7289da; border: none; border-radius: 4px; color: white; cursor: pointer; }
-#chat-send-btn:hover { background: #5b6eae; }
+#chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #36393f;
+    color: #dcddde;
+}
 
-/* Friend-Request Panel */
+#chat-header {
+    padding: 12px;
+    background: #2f3136;
+    font-weight: bold;
+}
+
+#chat-messages {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+#chat-messages div {
+    margin-bottom: 8px;
+}
+
+#chat-input-section {
+    display: flex;
+    padding: 12px;
+    background: #40444b;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    margin-right: 8px;
+    background: #202225;
+    color: #dcddde;
+}
+
+#chat-send-btn {
+    padding: 8px 16px;
+    background: #7289da;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+}
+
+#chat-send-btn:hover {
+    background: #5b6eae;
+}
+
+/* Friend Panel */
 #friends-panel {
-  width: 260px;
-  background: #2f3136;
-  color: #dcddde;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
+    width: 260px;
+    background: #2f3136;
+    color: #dcddde;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
 }
-#friends-panel h4 { margin-bottom: 8px; }
+
+#friends-panel h4 {
+    margin-bottom: 8px;
+}
+
 #friends-panel input {
-  width: 100%; padding: 8px; border: none; border-radius: 4px; margin-bottom: 8px;
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background: #202225;
+    color: #dcddde;
 }
+
 #friends-panel button {
-  width: 100%; padding: 8px; border: none; border-radius: 4px;
-  background: #7289da; color: white; cursor: pointer; margin-bottom: 8px;
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    background: #7289da;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 8px;
 }
-#friends-panel button:hover { background: #5b6eae; }
+
+#friends-panel button:hover {
+    background: #5b6eae;
+}
+
 #friend-requests {
-  flex: 1; overflow-y: auto; margin-top: 8px;
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 8px;
 }
+
 #friend-requests div {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 8px; background: #40444b; border-radius: 4px; margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: #40444b;
+    border-radius: 4px;
+    margin-bottom: 4px;
 }
+
 #friend-requests div button {
-  padding: 4px 8px; border: none; border-radius: 4px;
-  background: #7289da; color: white; cursor: pointer; margin-left: 4px;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    background: #7289da;
+    color: white;
+    cursor: pointer;
+    margin-left: 4px;
 }
-#friend-requests div button:hover { background: #5b6eae; }
 
-/* Remove-Friend Button */
+#friend-requests div button:hover {
+    background: #5b6eae;
+}
+
+/* Remove Friend Button */
 .remove-friend-btn {
-  padding: 4px 8px; background: #f04747; color: white;
-  border: none; border-radius: 4px; cursor: pointer;
+    padding: 4px 8px;
+    background: #f04747;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 }
+
 .remove-friend-btn:hover {
-  background: #c23628;
-}
-
-/* Friend Panel Styles */
-.friends-panel {
-  width: 260px;
-  background: #2f3136;
-  color: #dcddde;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Hide friend panel in groups tab */
-.groups-tab.active ~ #friends-panel,
-.groups-tab.active + #friends-panel {
-  display: none;
-}
-
-/* Create Group Button Visibility */
-#add-group-btn {
-  display: none;
-}
-
-#add-group-btn:not(.hidden) {
-  display: block;
+    background: #c23628;
 }
 
 /* Feedback Toasts */
 #feedback-container {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 10px;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
 }
 
 .feedback-toast {
-  background: #36393f;
-  color: #dcddde;
-  padding: 12px 16px;
-  border-radius: 4px;
-  border-left: 4px solid #7289da;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  max-width: 300px;
-  transform: translateX(0);
-  opacity: 1;
-  transition: all 0.3s ease;
+    background: #36393f;
+    color: #dcddde;
+    padding: 12px 16px;
+    border-radius: 4px;
+    border-left: 4px solid #7289da;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    max-width: 300px;
+    animation: slideIn 0.3s ease forwards;
 }
 
 .feedback-toast .feedback-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .feedback-toast .feedback-icon {
-  background: #7289da;
-  color: white;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
+    background: #7289da;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
 }
 
 .feedback-toast .feedback-message {
-  flex: 1;
+    flex: 1;
 }
 
-/* Animation */
 @keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-.feedback-toast {
-  animation: slideIn 0.3s ease forwards;
-}
-
-.feedback-toast.fade-out {
-  animation: fadeOut 0.3s ease forwards;
+    from { opacity: 1; }
+    to { opacity: 0; }
 }

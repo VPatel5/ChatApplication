@@ -1,47 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Application</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div id="app">
-    <!-- Sidebar: Friends & Groups Tabs -->
+    <!-- Sidebar -->
     <div id="sidebar">
         <div id="tabs">
             <button id="friends-tab" class="tab active">Friends</button>
             <button id="groups-tab" class="tab">Groups</button>
         </div>
         <div id="search-section">
-            <input id="search-input" placeholder="Search friends..." />
+            <input id="search-input" placeholder="Search friends...">
         </div>
         <ul id="friends-list" class="list"></ul>
         <ul id="groups-list" class="list hidden"></ul>
-        <button id="add-group-btn" class="action-btn hidden">Create Group</button>
+
+        <!-- Group Actions -->
+        <div id="group-actions" class="hidden">
+            <div id="create-group-section">
+                <input id="new-group-name" type="text" placeholder="Group name">
+                <button id="create-group-btn">+</button>
+            </div>
+        </div>
     </div>
 
     <!-- Chat Panel -->
     <div id="chat-panel">
-        <div id="chat-header">Select a conversation</div>
+        <div id="chat-header">
+            <span id="chat-title">Select a conversation</span>
+        </div>
         <div id="chat-messages"></div>
         <div id="chat-input-section">
-            <input id="chat-input" placeholder="Message..." />
+            <input id="chat-input" type="text" placeholder="Type a message...">
             <button id="chat-send-btn">Send</button>
         </div>
     </div>
 
-    <!-- Friend-Request Panel -->
-    <div id="friends-panel" class="friends-panel">
+    <!-- Friend Management Panel -->
+    <div id="friends-panel">
         <h4>Friends</h4>
-        <input id="friend-request-input" type="text" placeholder="Username"/>
+        <input id="friend-request-input" type="text" placeholder="Username">
         <button id="send-request-btn">Add Friend</button>
         <button id="view-requests-btn">View Requests</button>
         <div id="friend-requests"></div>
     </div>
 </div>
-
 <script src="app.js"></script>
 </body>
 </html>
