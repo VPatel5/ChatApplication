@@ -230,7 +230,7 @@ public class ConvoServerHandler extends ConvoHandler {
             }
             connection.sendPacket(new ServerResponsePacket(status, "OK".equals(status) ? ResponseType.OK : ResponseType.ERROR));
         } else if (msg instanceof ClientDirectMessagePacket packet) {
-            log.info("Received ClientDMPacket Type {}", packet.getMessageType());
+            log.debug("Received ClientDMPacket Type {}", packet.getMessageType());
             ConvoUser user = server.getUsersHandler().getUser(packet.getUser());
             if (user == null) {
                 connection.sendPacket(new ServerResponsePacket("Unknown user", ResponseType.WARNING));
@@ -239,7 +239,7 @@ public class ConvoServerHandler extends ConvoHandler {
                 connection.sendPacket(new ServerResponsePacket(response, "Send".equals(response) ? ResponseType.OK : ResponseType.WARNING));
             }
         } else if (msg instanceof ClientGroupMessagePacket packet) {
-            log.info("Received ClientGMPacket Type {}", packet.getMessageType());
+            log.debug("Received ClientGMPacket Type {}", packet.getMessageType());
             String response = server.getGroupsHandler().chat(packet.getName(), connection.getUser(), packet.getMessage());
             connection.sendPacket(new ServerResponsePacket(response, "Send".equals(response) ? ResponseType.OK : ResponseType.WARNING));
         }
@@ -263,7 +263,7 @@ public class ConvoServerHandler extends ConvoHandler {
         }
         else if (msg instanceof ClientGeminiRequestPacket packet)
         {
-            log.info("Received Gemini Request: {}, {}", packet.getMessageHistory(), packet.getUserInput());
+            log.debug("Received Gemini Request: {}, {}", packet.getMessageHistory(), packet.getUserInput());
             CompletableFuture<String> future = OpenAIClientProvider.askGemini(packet.getMessageHistory(), packet.getUserInput());
 
 

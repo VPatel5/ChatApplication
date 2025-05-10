@@ -54,13 +54,14 @@ public final class OpenAIClientProvider {
         return INSTANCE.chatCompletions()
                 .create(
                         ChatRequest.builder()
-                                .model("gemini-2.5-flash")
+                                .model("gemini-2.0-flash")
                                 .messages(chatMessages)
                                 .build()
                 )
                 .thenApply(resp -> resp.getChoices().get(0).getMessage().getContent())
                 .exceptionally(ex -> {
                     System.err.println("Error calling Gemini API: " + ex.getMessage());
+                    ex.printStackTrace();
                     return "Sorry, I couldn't process your request.";
                 });
     }
