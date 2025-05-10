@@ -54,11 +54,14 @@ public class WebUI extends Application {
             @Override
             public void onAuthFinished() {
                 startDataRefreshTimer();
-                Platform.runLater(() -> engine.load(getClass().getResource("/ui/index.html").toExternalForm()));
+                Platform.runLater(() -> {
+                    engine.load(getClass().getResource("/ui/index.html").toExternalForm());
+                });
             }
 
             @Override
             public void onFriendsList(List<ConvoUser> list) {
+                runJS("updateUsernameDisplay", client.getUser().getName());
                 runJS("populateFriends", list.stream().map(ConvoUser::getName).collect(Collectors.toList()));
             }
 

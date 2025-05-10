@@ -30,6 +30,20 @@
             <button id="view-group-invites-btn">View Group Invites</button>
             <div id="group-invites" class="hidden"></div>
         </div>
+
+        <div id="friend-actions" class="hidden">
+            <div id="create-friend-section">
+                <input id="new-friend-name" type="text" placeholder="Friend username">
+                <button id="add-friend-btn">+</button>
+            </div>
+            <button id="view-friend-requests-btn">View Friend Requests</button>
+            <div id="friend-requests" class="hidden"></div>
+        </div>
+
+        <div id="user-info">
+            <span id="username-display">Logged in as </span>
+        </div>
+
     </div>
 
     <!-- Chat Panel -->
@@ -43,15 +57,6 @@
             <input id="chat-input" type="text" placeholder="Type a message...">
             <button id="chat-send-btn">Send</button>
         </div>
-    </div>
-
-    <!-- Friend Management Panel -->
-    <div id="friends-panel">
-        <h4>Friends</h4>
-        <input id="friend-request-input" type="text" placeholder="Username">
-        <button id="send-request-btn">Add Friend</button>
-        <button id="view-requests-btn">View Requests</button>
-        <div id="friend-requests"></div>
     </div>
 
     <div id="invite-modal" class="hidden">

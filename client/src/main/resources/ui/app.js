@@ -25,11 +25,11 @@ const elements = {
         input: document.getElementById('chat-input'),
         sendBtn: document.getElementById('chat-send-btn')
     },
-    friendsPanel: {
-        container: document.getElementById('friends-panel'),
-        input: document.getElementById('friend-request-input'),
-        sendBtn: document.getElementById('send-request-btn'),
-        viewBtn: document.getElementById('view-requests-btn'),
+    friendActions: {
+        container: document.getElementById('friend-actions'),
+        input: document.getElementById('new-friend-name'),
+        addBtn: document.getElementById('add-friend-btn'),
+        viewRequestsBtn: document.getElementById('view-friend-requests-btn'),
         requests: document.getElementById('friend-requests')
     },
     groupActions: {
@@ -45,6 +45,10 @@ const elements = {
         friendSelect: document.getElementById('friend-select'),
         confirmInviteBtn: document.getElementById('confirm-invite-btn'),
         closeModal: document.querySelector('.close-modal')
+    },
+    userInfo: {
+        container: document.getElementById('user-info'),
+        display: document.getElementById('username-display')
     }
 };
 
@@ -80,6 +84,10 @@ function addMessage(line) {
 function clearAndRenderChat(lines) {
     elements.chat.messages.innerHTML = '';
     if (Array.isArray(lines)) lines.forEach(addMessage);
+}
+
+function updateUsernameDisplay(username) {
+    elements.userInfo.display.textContent = `Logged in as ${username}`;
 }
 
 // ─── Data Population Functions ─────────────────────────────────────────────
@@ -137,7 +145,7 @@ window.populateGroupInvites = invites => {
 
 window.populateFriendRequests = list => {
     incomingFriendInvites = list;
-    elements.friendsPanel.requests.innerHTML = '';
+    elements.friendActions.requests.innerHTML = '';
     incomingFriendInvites.forEach(inviter => {
         const row = document.createElement('div');
         row.textContent = inviter + ' ';
@@ -148,7 +156,7 @@ window.populateFriendRequests = list => {
         dec.textContent = 'Decline';
         dec.onclick = () => handleFriendRequestResponse(inviter, false);
         row.append(acc, dec);
-        elements.friendsPanel.requests.appendChild(row);
+        elements.friendActions.requests.appendChild(row);
     });
 };
 
@@ -215,7 +223,7 @@ elements.tabs.friends.addEventListener('click', () => {
     elements.lists.friends.classList.remove('hidden');
     elements.lists.groups.classList.add('hidden');
     elements.groupActions.container.classList.add('hidden');
-    elements.friendsPanel.container.classList.remove('hidden');
+    elements.friendActions.container.classList.remove('hidden');
     elements.search.placeholder = 'Search friends...';
 
     window.alert(JSON.stringify({
@@ -237,7 +245,7 @@ elements.tabs.groups.addEventListener('click', () => {
     elements.lists.groups.classList.remove('hidden');
     elements.lists.friends.classList.add('hidden');
     elements.groupActions.container.classList.remove('hidden');
-    elements.friendsPanel.container.classList.add('hidden');
+    elements.friendActions.container.classList.add('hidden');
     elements.search.placeholder = 'Search groups...';
 
     window.alert(JSON.stringify({
@@ -313,16 +321,19 @@ elements.chat.input.addEventListener('keypress', e => {
     if (e.key === 'Enter') sendMessage();
 });
 
-elements.friendsPanel.sendBtn.addEventListener('click', () => {
-    const username = elements.friendsPanel.input.value.trim();
+elements.friendActions.addBtn.addEventListener('click', () => {
+    const username = elements.friendActions.input.value.trim();
     if (!username) return;
     window.alert(JSON.stringify({
         action: 'sendFriendRequest',
         target: username
     }));
+    elements.friendActions.input.value = '';
 });
 
-elements.friendsPanel.viewBtn.addEventListener('click', () => {
+elements.friendActions.viewRequestsBtn.addEventListener('click', () => {
+    elements.friendActions.requests.classList.toggle('hidden');
+
     window.alert(JSON.stringify({
         action: 'getFriendRequests'
     }));
@@ -353,3 +364,4 @@ window.populateGroupInvites = populateGroupInvites;
 window.populateFriendRequests = populateFriendRequests;
 window.populateDirectMessages = populateDirectMessages;
 window.populateGroupMessages = populateGroupMessages;
+window.updateUsernameDisplay = updateUsernameDisplay;
