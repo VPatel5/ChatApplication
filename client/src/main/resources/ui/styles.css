@@ -80,9 +80,24 @@ body, html {
 
 /* Group Actions */
 #group-actions {
-    padding: 10px;
-    background: #2f3136;
-    border-top: 1px solid #202225;
+    /* Keep your existing styles */
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Adds spacing between buttons */
+}
+
+#invite-friend-btn {
+    width: 100%;
+    padding: 8px;
+    background: #43b581;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#invite-friend-btn:hover {
+    background: #3aa370;
 }
 
 #create-group-section {
@@ -361,28 +376,6 @@ body, html {
     background: #5b6eae;
 }
 
-#chat-actions {
-    padding: 8px 12px;
-    background: #2f3136;
-    border-bottom: 1px solid #202225;
-    display: flex;
-    justify-content: flex-end;
-}
-
-/* Invite Button Styles */
-#invite-friend-btn {
-    padding: 6px 12px;
-    background: #43b581;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-left: 10px;
-}
-
-#invite-friend-btn:hover {
-    background: #3aa370;
-}
 /* Modal Styles */
 #invite-modal {
     position: fixed;

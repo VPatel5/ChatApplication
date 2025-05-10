@@ -23,9 +23,7 @@ const elements = {
         header: document.getElementById('chat-header'),
         messages: document.getElementById('chat-messages'),
         input: document.getElementById('chat-input'),
-        sendBtn: document.getElementById('chat-send-btn'),
-        actions: document.getElementById('chat-actions'),
-        inviteBtn: document.getElementById('invite-friend-btn')
+        sendBtn: document.getElementById('chat-send-btn')
     },
     friendsPanel: {
         container: document.getElementById('friends-panel'),
@@ -39,7 +37,8 @@ const elements = {
         input: document.getElementById('new-group-name'),
         viewInvitesBtn: document.getElementById('view-group-invites-btn'),
         invitesContainer: document.getElementById('group-invites'),
-        createBtn: document.getElementById('create-group-btn')
+        createBtn: document.getElementById('create-group-btn'),
+        inviteBtn: document.getElementById('invite-friend-btn')
     },
     invite: {
         inviteModal: document.getElementById('invite-modal'),
@@ -173,10 +172,10 @@ function selectConversation(name, type) {
 
     if (type === 'group') {
         elements.chat.header.textContent = "Group: " + name;
-        elements.chat.inviteBtn.classList.remove('hidden');
+        elements.groupActions.inviteBtn.classList.remove('hidden');
     } else {
         elements.chat.header.textContent = name;
-        elements.chat.inviteBtn.classList.add('hidden');
+        elements.groupActions.inviteBtn.classList.add('hidden');
     }
 
     window.alert(JSON.stringify({
@@ -228,7 +227,7 @@ elements.tabs.friends.addEventListener('click', () => {
     elements.chat.header.textContent = 'Select a conversation';
     elements.chat.messages.innerHTML = '';
     clearAndRenderChat([]);
-    elements.chat.inviteBtn.classList.add('hidden');
+    elements.groupActions.inviteBtn.classList.add('hidden');
 
 });
 
@@ -250,13 +249,13 @@ elements.tabs.groups.addEventListener('click', () => {
     elements.chat.header.textContent = 'Select a conversation';
     elements.chat.messages.innerHTML = '';
     clearAndRenderChat([]);
-    elements.chat.inviteBtn.classList.add('hidden');
+    elements.groupActions.inviteBtn.classList.add('hidden');
 
 });
 
 // ─── Event Listeners ───────────────────────────────────────────────────────
 
-elements.chat.inviteBtn.addEventListener('click', () => {
+elements.groupActions.inviteBtn.addEventListener('click', () => {
     elements.invite.friendSelect.innerHTML = '';
     friends.forEach(friend => {
         const option = document.createElement('option');
