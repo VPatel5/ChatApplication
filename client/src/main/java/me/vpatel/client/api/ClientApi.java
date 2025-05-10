@@ -39,13 +39,26 @@ public class ClientApi {
     public void chat(String friendName, String message) {
         log.info("Attempting to send {} message: {}", friendName, message);
         log.info("Friends: {}", friends);
+
         for (ConvoUser friend : this.getFriends()) {
             if (friend.getName().equals(friendName)) {
                 log.info("Sending {} message: {}", friend.getId(), message);
                 client.getHandler().getConnection()
                         .sendPacket(new ClientDirectMessagePacket(message, friend.getId()));
-                return;
+                break;
             }
+        }
+
+        if (friendName.equalsIgnoreCase("AI"))
+        {
+            List<String> messages = getDirectMessages().stream()
+                    .filter(m -> m.getSender().getInternalId() == 0 ||
+                            m.getRecipient().getInternalId() == 0)
+                    .map(m -> m.getSender().getName() + ": " + m.getMessage())
+                    .toList();
+
+            client.getHandler().getConnection()
+                    .sendPacket(new ClientGeminiRequestPacket(messages, message));
         }
     }
 
@@ -53,6 +66,18 @@ public class ClientApi {
         log.info("Sending {} message: {}", user, message);
         client.getHandler().getConnection()
                 .sendPacket(new ClientDirectMessagePacket(message, user.getId()));
+
+        if (user.equals(ConvoUser.AI_USER))
+        {
+            List<String> messages = getDirectMessages().stream()
+                    .filter(m -> m.getSender().getInternalId() == 0 ||
+                            m.getRecipient().getInternalId() == 0)
+                    .map(m -> m.getSender().getName() + ": " + m.getMessage())
+                    .toList();
+
+            client.getHandler().getConnection()
+                    .sendPacket(new ClientGeminiRequestPacket(messages, message));
+        }
     }
 
     public void groupChat(String groupName, String message) {

@@ -27,7 +27,11 @@ public class UsersTable {
 
     public static UsersTable of(ConvoUser user) {
         UsersTable usersTable = new UsersTable(user.getId().toString(), user.getName());
-        usersTable.setId(user.getInternalId());
+        if (user.equals(ConvoUser.AI_USER)) {
+            usersTable.setId(ConvoUser.AI_USER.getInternalId());
+        } else {
+            usersTable.setId(user.getInternalId());
+        }
         return usersTable;
     }
 

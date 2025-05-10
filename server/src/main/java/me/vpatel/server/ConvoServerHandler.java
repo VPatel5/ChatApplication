@@ -1,5 +1,8 @@
 package me.vpatel.server;
 
+import io.netty.util.concurrent.Promise;
+import me.vpatel.db.MessageDao;
+import me.vpatel.db.tables.MessageTable;
 import me.vpatel.network.ConvoConnection;
 import me.vpatel.network.api.ConvoUser;
 import me.vpatel.network.api.Invite;
@@ -13,7 +16,9 @@ import me.vpatel.network.protocol.server.ServerResponsePacket.ResponseType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -255,6 +260,28 @@ public class ConvoServerHandler extends ConvoHandler {
                 messages = new ArrayList<>();
             }
             connection.sendPacket(new ServerGroupMessagesReponsePacket(messages, packet.getGroupName()));
+        }
+        else if (msg instanceof ClientGeminiRequestPacket packet)
+        {
+            log.info("Received Gemini Request: {}, {}", packet.getMessageHistory(), packet.getUserInput());
+            CompletableFuture<String> future = OpenAIClientProvider.askGemini(packet.getMessageHistory(), packet.getUserInput());
+
+
+            future.whenComplete((response, error) -> {
+                MessageTable aiResponse = new MessageTable();
+                aiResponse.setSenderId(0); // AI user has ID 0
+                aiResponse.setRecipientId(connection.getUser().getInternalId());
+                aiResponse.setTimestamp(OffsetDateTime.now());
+                aiResponse.setGroupId(-1);
+                aiResponse.setMessage(response);
+
+                server.getDbHandler().jdbi().withExtension(MessageDao.class, handle -> {
+                    handle.saveMessage(aiResponse);
+                    return null;
+                });
+
+                connection.sendPacket(new ServerGeminiResponsePacket(response));
+            });
         }
     }
 

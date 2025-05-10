@@ -21,6 +21,7 @@ public class ConvoServer {
     private static final Logger log = LogManager.getLogger(ConvoServer.class);
 
     public static final Property<String> CHATGPT_KEY = new Property<>("chatgpt.key", String.class, "");
+    public static final Property<String> GEMINI_KEY = new Property<>("gemini.key", String.class, "");
     public static final Property<String> DB_USER = new Property<>("db.user", String.class, "user");
     public static final Property<String> DB_PASS = new Property<>("db.pass", String.class, "pass");
     public static final Property<String> DB_NAME = new Property<>("db.name", String.class, "convo");

@@ -21,6 +21,12 @@ public class ConvoUser {
         this.name = name;
     }
 
+    public ConvoUser(UUID id, int internalId, String name) {
+        this.id = id;
+        this.internalId = internalId;
+        this.name = name;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -63,6 +69,12 @@ public class ConvoUser {
                 Objects.equal(name, user.name) &&
                 Objects.equal(friends, user.friends);
     }
+
+    public static final ConvoUser AI_USER = new ConvoUser(
+            UUID.fromString("00000000-0000-0000-0000-000000000000"),
+            0,
+            "AI"
+    );
 
     @Override
     public int hashCode() {

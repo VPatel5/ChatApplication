@@ -69,7 +69,33 @@ public class AuthHandler {
         }
     }
 
+    public ConvoUser registerAI() {
+        ConvoUser AI = ConvoUser.AI_USER;
+        try {
+            boolean exists = server.getDbHandler()
+                    .jdbi()
+                    .withExtension(UserDao.class, dao -> dao.getByName(AI.getName()) != null);
+
+            if (exists) {
+                return AI;
+            }
+
+            UsersTable user = new UsersTable();
+            user.setUuid(AI.getId().toString());
+            user.setName(AI.getName());
+            user.setPasswordHash("password");
+            user.setSalt("salt");
+
+            server.getDbHandler().jdbi().useExtension(UserDao.class, dao -> dao.create(user));
+            return user.convert();
+        } catch (Exception e) {
+            log.error("Failed to register user", e);
+            return null;
+        }
+    }
+
     public ConvoUser loginUser(String username, String password) {
+        registerAI();
         return server.getDbHandler().jdbi().withExtension(UserDao.class, dao -> {
             UsersTable user = dao.getByName(username);
             if (user == null) return null;

@@ -27,6 +27,7 @@ public class ConvoPacketRegistry {
         register(PacketDirection.TO_SERVER, 7, ClientGroupMessagePacket.class);
         register(PacketDirection.TO_SERVER, 8, ClientDirectMessagesRequestPacket.class);
         register(PacketDirection.TO_SERVER, 9, ClientGroupMessagesRequestPacket.class);
+        register(PacketDirection.TO_SERVER, 10, ClientGeminiRequestPacket.class);
 
         // TO CLIENT
         register(PacketDirection.TO_CLIENT, 0, ServerPongPacket.class);
@@ -42,6 +43,7 @@ public class ConvoPacketRegistry {
         register(PacketDirection.TO_CLIENT, 10, ServerGroupMessagePacket.class);
         register(PacketDirection.TO_CLIENT, 11, ServerDirectMessagesReponsePacket.class);
         register(PacketDirection.TO_CLIENT, 12, ServerGroupMessagesReponsePacket.class);
+        register(PacketDirection.TO_CLIENT, 13, ServerGeminiResponsePacket.class);
 
     }
 

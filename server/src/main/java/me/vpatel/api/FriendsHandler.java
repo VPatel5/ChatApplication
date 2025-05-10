@@ -78,7 +78,7 @@ public class FriendsHandler {
         }
         return server.getDbHandler().jdbi().withExtension(FriendDao.class, handle -> {
             handle.addFriend(UsersTable.of(user), UsersTable.of(invite.getInviter()));
-            return "OK";
+            return "Accepted friend request";
         });
     }
 
@@ -88,7 +88,7 @@ public class FriendsHandler {
                 return "Invalid";
             }
             handle.deactivateInviteById(invite.getInternalId());
-            return "OK";
+            return "Rejected the friend request";
         });
     }
 
@@ -98,7 +98,7 @@ public class FriendsHandler {
                 return "Invalid";
             }
             handle.deactivateInviteById(invite.getInternalId());
-            return "OK";
+            return "Revoked the friend request";
         });
     }
 
@@ -142,7 +142,7 @@ public class FriendsHandler {
         Integer affectedRows = server.getDbHandler().jdbi().withExtension(FriendDao.class,
                 handle -> handle.removeFriend(UsersTable.of(sender), UsersTable.of(removed)));
 
-        return affectedRows != 0 ? "OK" : "User was not in friendlist!";
+        return affectedRows != 0 ? "Successfully removed user" : "User was not in friendlist!";
     }
 
 //    public String chat(ConvoUser sender, ConvoUser receiver, String message) {
@@ -163,7 +163,7 @@ public class FriendsHandler {
         // Verify they are friends
         boolean areFriends = getFriends(sender).stream()
                 .anyMatch(f -> f.getInternalId() == receiver.getInternalId());
-        if (!areFriends) {
+        if (!areFriends && receiver.getInternalId() != 0) {
             return "User is not in friend list!";
         }
 
@@ -181,7 +181,7 @@ public class FriendsHandler {
 
         return server.getDbHandler().jdbi().withExtension(MessageDao.class, handle -> {
             handle.saveMessage(messageTable);
-            return "Send";
+            return "Sent message";
         });
     }
 }

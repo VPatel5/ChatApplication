@@ -121,6 +121,7 @@
                 <type>pom</type>
             </dependency>
 
+            <!-- UI Design -->
             <dependency>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-controls</artifactId>
@@ -130,6 +131,13 @@
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-web</artifactId>
                 <version>24.0.1</version>
+            </dependency>
+
+            <!-- AI -->
+            <dependency>
+                <groupId>io.github.sashirestela</groupId>
+                <artifactId>simple-openai</artifactId>
+                <version>3.19.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -117,8 +117,11 @@ public class ConvoClientHandler extends ConvoHandler {
                     listeners.forEach(l -> l.onUsersList(list.getUsers()));
                 }
                 case FRIENDS -> {
-                    client.getClientApi().setFriends(list.getFriends());
-                    listeners.forEach(l -> l.onFriendsList(list.getFriends()));
+                    List<ConvoUser> users = new ArrayList<>();
+                    users.add(ConvoUser.AI_USER);
+                    users.addAll(list.getFriends());
+                    client.getClientApi().setFriends(users);
+                    listeners.forEach(l -> l.onFriendsList(users));
                 }
                 case INCOMING_FRIEND_INVITES -> {
                     client.getClientApi().setIncomingFriendInvites(list.getInvites());
@@ -165,6 +168,9 @@ public class ConvoClientHandler extends ConvoHandler {
         }
         else if (msg instanceof ServerInviteStatusPacket) {
             requestAllLists();
+        } else if (msg instanceof ServerGeminiResponsePacket packet) {
+            log.info("Received AI Response: {}", packet.getAiResponse());
+            listeners.forEach(l -> l.onGeminiResponse(packet.getAiResponse()));
         }
         else {
             log.warn("Unhandled packet: {}", msg.getClass().getSimpleName());
@@ -199,6 +205,7 @@ public class ConvoClientHandler extends ConvoHandler {
         default void onGroupMessages(String group, List<Message> messages) {}
         default void onUnhandled(ConvoPacket packet) {}
         default void onError(String error) {}
+        default void onGeminiResponse(String response) {}
     }
 
     public void requestAllLists()
