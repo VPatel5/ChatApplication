@@ -36,6 +36,11 @@
         <div id="chat-header">
             <span id="chat-title">Select a conversation</span>
         </div>
+
+        <div id="chat-actions">
+            <button id="invite-friend-btn" class="hidden">Invite Friend</button>
+        </div>
+
         <div id="chat-messages"></div>
         <div id="chat-input-section">
             <input id="chat-input" type="text" placeholder="Type a message...">
@@ -51,6 +56,16 @@
         <button id="view-requests-btn">View Requests</button>
         <div id="friend-requests"></div>
     </div>
+
+    <div id="invite-modal" class="hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Invite Friend to Group</h3>
+            <select id="friend-select"></select>
+            <button id="confirm-invite-btn">Invite</button>
+        </div>
+    </div>
+
 </div>
 <script src="app.js"></script>
 </body>
