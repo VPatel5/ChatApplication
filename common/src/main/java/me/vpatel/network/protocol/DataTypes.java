@@ -132,7 +132,9 @@ public class DataTypes {
         message.setInternalId(buf.readLong());
         MessageType type = MessageType.values()[buf.readInt()];
         message.setMessageType(type);
-        message.setRecipient(readUser(buf));
+        if (type == MessageType.USER) {
+            message.setRecipient(readUser(buf));
+        }
         message.setSender(readUser(buf));
         if (type == MessageType.GROUP) {
             message.setGroup(readGroup(buf));
@@ -145,7 +147,9 @@ public class DataTypes {
     public static void writeMessage(Message message, ByteBuf buf) {
         buf.writeLong(message.getInternalId());
         buf.writeInt(message.getMessageType().ordinal());
-        writeUser(message.getRecipient(), buf);
+        if (message.getMessageType() == MessageType.USER) {
+            writeUser(message.getRecipient(), buf);
+        }
         writeUser(message.getSender(), buf);
         if (message.getMessageType() == MessageType.GROUP) {
             writeGroup(message.getGroup(), buf);

@@ -65,6 +65,7 @@ public class WebUI extends Application {
             @Override
             public void onGroupsList(List<ConvoGroup> list) {
                 runJS("populateGroups", list.stream().map(ConvoGroup::getName).collect(Collectors.toList()));
+                list.stream().map(ConvoGroup::getName).forEach(client.getClientApi()::requestGroupMessages);
             }
 
             @Override
