@@ -1,6 +1,7 @@
 package me.vpatel.client;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -61,6 +62,8 @@ public class ConvoClient {
                     .group(group)
                     .channel(NioSocketChannel.class)
                     .handler(new ConvoPipeline(packetRegistry, handler, packetHandler));
+
+            bootstrap.option(ChannelOption.TCP_NODELAY, true);
 
             // wait till connection should be closed
             bootstrap.connect(hostname, port).sync().channel().closeFuture().sync();

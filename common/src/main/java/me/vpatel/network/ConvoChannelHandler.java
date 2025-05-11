@@ -29,7 +29,7 @@ public class ConvoChannelHandler extends SimpleChannelInboundHandler<ConvoPacket
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         log.info("[-] Channel disconnected: {}", ctx.channel().remoteAddress());
 
         if (handler != null) {

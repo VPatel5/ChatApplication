@@ -36,12 +36,12 @@ public class ClientApi {
     private List<Message> directMessages = new ArrayList<>();
 
     public void chat(String friendName, String message) {
-        log.info("Attempting to send {} message: {}", friendName, message);
-        log.info("Friends: {}", friends);
+        log.debug("Attempting to send {} message: {}", friendName, message);
+        log.debug("Friends: {}", friends);
 
         for (ConvoUser friend : this.getFriends()) {
             if (friend.getName().equals(friendName)) {
-                log.info("Sending {} message: {}", friend.getId(), message);
+                log.debug("Sending {} message: {}", friend.getId(), message);
                 client.getHandler().getConnection()
                         .sendPacket(new ClientDirectMessagePacket(message, friend.getId()));
                 break;
@@ -62,7 +62,7 @@ public class ClientApi {
     }
 
     public void chat(ConvoUser user, String message) {
-        log.info("Sending {} message: {}", user, message);
+        log.debug("Sending {} message: {}", user, message);
         client.getHandler().getConnection()
                 .sendPacket(new ClientDirectMessagePacket(message, user.getId()));
 

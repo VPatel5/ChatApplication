@@ -66,12 +66,12 @@ public class ConvoClientHandler extends ConvoHandler {
             }
 
         } else if (msg instanceof ServerEncryptionRequestPacket encReq) {
-            log.info("Received encryption request");
+            log.debug("Received encryption request");
             listeners.forEach(Listener::onEncryptionRequest);
             client.getAuthHandler().auth(encReq, connection);
 
         } else if (msg instanceof ServerAuthFinishedPacket authFin) {
-            log.info("Authentication finished");
+            log.debug("Authentication finished");
             connection.setAuthFinished(true);
             listeners.forEach(Listener::onAuthFinished);
 
@@ -81,11 +81,11 @@ public class ConvoClientHandler extends ConvoHandler {
             listeners.forEach(l -> l.onError("Received " + msg + " before auth"));
 
         } else if (msg instanceof ServerPongPacket pong) {
-            log.info("PONG: {}", pong.getPayload());
+            log.debug("PONG: {}", pong.getPayload());
             listeners.forEach(l -> l.onPong(pong.getPayload()));
 
         } else if (msg instanceof ServerResponsePacket resp) {
-            log.info("Response [{}]: {}", resp.getType(), resp.getMessage());
+            log.debug("Response [{}]: {}", resp.getType(), resp.getMessage());
             listeners.forEach(l -> l.onResponse(resp.getType(), resp.getMessage()));
 
         } else if (msg instanceof ServerListResponsePacket list) {
@@ -152,7 +152,7 @@ public class ConvoClientHandler extends ConvoHandler {
         else if (msg instanceof ServerInviteStatusPacket) {
             requestAllLists();
         } else if (msg instanceof ServerGeminiResponsePacket packet) {
-            log.info("Received AI Response: {}", packet.getAiResponse());
+            log.debug("Received AI Response: {}", packet.getAiResponse());
             listeners.forEach(l -> l.onGeminiResponse(packet.getAiResponse()));
         }
         else {

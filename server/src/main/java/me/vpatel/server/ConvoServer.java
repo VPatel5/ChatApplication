@@ -1,8 +1,13 @@
 package me.vpatel.server;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import me.vpatel.api.FriendsHandler;
 import me.vpatel.api.GroupsHandler;
@@ -66,24 +71,30 @@ public class ConvoServer {
         this.packetHandler = new ConvoServerPacketHandler(handler);
         this.packetHandler.init();
 
+        log.info("Booting up database");
         dbHandler = new DBHandler();
         dbHandler.setup();
         dbHandler.createTables();
 
-        this.authHandler = new AuthHandler(this);
-
+        log.info("Creating handlers");
+        authHandler = new AuthHandler(this);
         usersHandler = new UsersHandler(this);
         groupsHandler = new GroupsHandler(this);
         friendsHandler = new FriendsHandler(this);
 
         log.info("Booting up server socket");
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        int ioThreads = Runtime.getRuntime().availableProcessors() * 2;
+
+        EventLoopGroup bossGroup = new MultiThreadIoEventLoopGroup(2, NioIoHandler.newFactory());
+        EventLoopGroup workerGroup = new MultiThreadIoEventLoopGroup(ioThreads, NioIoHandler.newFactory());
         try {
             ServerBootstrap bootstrap = new ServerBootstrap()
-                    .group(bossGroup)
+                    .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ConvoPipeline(packetRegistry, handler, packetHandler));
+
+            bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
+            bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
 
             bootstrap.bind(port).sync().channel().closeFuture().sync();
         } catch (InterruptedException e) {
