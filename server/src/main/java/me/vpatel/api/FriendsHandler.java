@@ -145,22 +145,7 @@ public class FriendsHandler {
         return affectedRows != 0 ? "Successfully removed user" : "User was not in friendlist!";
     }
 
-//    public String chat(ConvoUser sender, ConvoUser receiver, String message) {
-//        ConvoConnection connection = server.getHandler().getConnection(receiver);
-//        if (connection == null) {
-//            return "User is not online or not in friend list!";
-//        }
-//
-//        if (getFriends(sender).stream().noneMatch(p -> p.getInternalId() == receiver.getInternalId())) {
-//            return "User is not online or not in friend list!";
-//        } else {
-//            connection.sendPacket(new ServerChatPacket(message, sender.getId()));
-//            return "Send";
-//        }
-//    }
-
     public String chat(ConvoUser sender, ConvoUser receiver, String message) {
-        // Verify they are friends
         boolean areFriends = getFriends(sender).stream()
                 .anyMatch(f -> f.getInternalId() == receiver.getInternalId());
         if (!areFriends && receiver.getInternalId() != 0) {

@@ -24,7 +24,6 @@ public class AuthHandler {
     private static final SecureRandom random = new SecureRandom();
 
     private final ConvoServer server;
-    private final Gson gson = new Gson();
 
     private final Map<String, byte[]> verificationTokens = new ConcurrentHashMap<>();
 
@@ -117,12 +116,6 @@ public class AuthHandler {
         } catch (Exception e) {
             throw new RuntimeException("Password hashing failed", e);
         }
-    }
-
-    private String generateSalt() {
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
-        return Base64.getEncoder().encodeToString(salt);
     }
 
     public byte[] genVerificationToken(String user) {

@@ -14,12 +14,8 @@ public final class OpenAIClientProvider {
             .apiKey(ConvoServer.GEMINI_KEY.get())
             .build();
 
-    private OpenAIClientProvider() {
-    } // Prevent instantiation
+    private OpenAIClientProvider() {}
 
-    /**
-     * Returns the shared SimpleOpenAIGeminiGoogle client instance.
-     */
     public static SimpleOpenAIGeminiGoogle getClient() {
         return INSTANCE;
     }
@@ -29,10 +25,9 @@ public final class OpenAIClientProvider {
             throw new IllegalArgumentException("User input cannot be null or empty.");
         }
 
-        // Convert List<String> with "user:"/"ai:" prefixes to List<ChatMessage>
         List<ChatMessage> chatMessages = new ArrayList<>();
         for (String rawMessage : messageHistory) {
-            String[] parts = rawMessage.split(":", 2); // Split on first colon
+            String[] parts = rawMessage.split(":", 2);
             if (parts.length != 2) {
                 throw new IllegalArgumentException("Invalid message format. Expected 'role: message'");
             }
@@ -42,9 +37,9 @@ public final class OpenAIClientProvider {
 
             ChatMessage message;
             if (role.equals("ai")) {
-                message = ChatMessage.AssistantMessage.of(content); // AI message
+                message = ChatMessage.AssistantMessage.of(content);
             } else {
-                message = ChatMessage.UserMessage.of(content); // User message
+                message = ChatMessage.UserMessage.of(content);
             }
             chatMessages.add(message);
         }

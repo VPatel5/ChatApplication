@@ -11,7 +11,6 @@ import me.vpatel.console.ConvoConsole;
 import me.vpatel.db.DBHandler;
 import me.vpatel.network.pipeline.ConvoPipeline;
 import me.vpatel.network.properties.Property;
-import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacketRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +19,6 @@ public class ConvoServer {
 
     private static final Logger log = LogManager.getLogger(ConvoServer.class);
 
-    public static final Property<String> CHATGPT_KEY = new Property<>("chatgpt.key", String.class, "");
     public static final Property<String> GEMINI_KEY = new Property<>("gemini.key", String.class, "");
     public static final Property<String> DB_USER = new Property<>("db.user", String.class, "user");
     public static final Property<String> DB_PASS = new Property<>("db.pass", String.class, "pass");

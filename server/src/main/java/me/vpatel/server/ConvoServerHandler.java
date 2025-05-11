@@ -1,13 +1,11 @@
 package me.vpatel.server;
 
-import io.netty.util.concurrent.Promise;
 import me.vpatel.db.MessageDao;
 import me.vpatel.db.tables.MessageTable;
 import me.vpatel.network.ConvoConnection;
 import me.vpatel.network.api.ConvoUser;
 import me.vpatel.network.api.Invite;
 import me.vpatel.network.api.Message;
-import me.vpatel.network.api.MessageType;
 import me.vpatel.network.protocol.ConvoHandler;
 import me.vpatel.network.protocol.ConvoPacket;
 import me.vpatel.network.protocol.client.*;
@@ -17,7 +15,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
