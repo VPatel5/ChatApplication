@@ -1,12 +1,14 @@
 package me.vpatel.client.ui;
 
 import com.google.gson.Gson;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import me.vpatel.client.AppContext;
 import me.vpatel.client.ConvoClient;
 import me.vpatel.client.ConvoClientHandler;
@@ -53,7 +55,13 @@ public class WebUI extends Application {
             public void onAuthFinished() {
                 startDataRefreshTimer();
                 Platform.runLater(() -> {
-                    engine.load(getClass().getResource("/ui/index.html").toExternalForm());
+                    engine.load(getClass().getResource("/ui/loading.html").toExternalForm());
+                    // then wait 3 seconds and switch to index.html
+                    PauseTransition pause = new PauseTransition(Duration.seconds(2));
+                    pause.setOnFinished(evt -> engine.load(
+                            getClass().getResource("/ui/index.html").toExternalForm()
+                    ));
+                    pause.play();
                 });
             }
 
@@ -258,11 +266,11 @@ public class WebUI extends Application {
                 try {
                     engine.executeScript(fn + "(" + json + ")");
                 } catch (Exception e) {
-                    log.error("Error executing JS function: " + fn, e);
+                    log.debug("Error executing JS function: " + fn, e);
                 }
             });
         } catch (Exception e) {
-            log.error("Error preparing JS call", e);
+            log.debug("Error preparing JS call", e);
         }
     }
 }
