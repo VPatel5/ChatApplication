@@ -23,14 +23,8 @@ public class ConvoClientHandler extends ConvoHandler {
     private ConvoConnection connection;
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
 
-    /** Subscribe to connection events */
     public void addListener(Listener l) {
         listeners.add(l);
-    }
-
-    /** Unsubscribe */
-    public void removeListener(Listener l) {
-        listeners.remove(l);
     }
 
     @Override
@@ -52,19 +46,16 @@ public class ConvoClientHandler extends ConvoHandler {
     public void handle(ConvoConnection conn, ConvoPacket msg) {
         log.debug("Received packet: {}", msg.getClass().getSimpleName());
 
-        // LOGIN FAIL
         if (msg instanceof ServerLoginFailPacket fail) {
             log.info("Login failed: {}", fail.getMessage());
             listeners.forEach(l -> l.onLoginFailed(fail.getMessage()));
 
-            // LOGIN SUCCESS
         } else if (msg instanceof ServerLoginSuccessPacket success) {
             ConvoUser user = new ConvoUser(success.getUuid(), success.getUsername());
             client.setUser(user);
             log.info("Login successful: {}", user);
             listeners.forEach(l -> l.onLoginSuccess(user));
 
-            // REGISTER RESPONSE
         } else if (msg instanceof ServerRegisterResponsePacket reg) {
             if (reg.isSuccess()) {
                 log.info("Registration succeeded");
@@ -74,35 +65,29 @@ public class ConvoClientHandler extends ConvoHandler {
                 listeners.forEach(l -> l.onRegisterFailed(reg.getMessage()));
             }
 
-            // ENCRYPTION REQUEST
         } else if (msg instanceof ServerEncryptionRequestPacket encReq) {
             log.info("Received encryption request");
             listeners.forEach(Listener::onEncryptionRequest);
             client.getAuthHandler().auth(encReq, connection);
 
-            // AUTH FINISHED
         } else if (msg instanceof ServerAuthFinishedPacket authFin) {
             log.info("Authentication finished");
             connection.setAuthFinished(true);
             listeners.forEach(Listener::onAuthFinished);
 
-            // NOT AUTHENTICATED
         } else if (!connection.isAuthFinished()) {
             log.error("Packet {} before auth, closing", msg.getClass().getSimpleName());
             connection.close("Not authenticated");
             listeners.forEach(l -> l.onError("Received " + msg + " before auth"));
 
-            // PONG
         } else if (msg instanceof ServerPongPacket pong) {
             log.info("PONG: {}", pong.getPayload());
             listeners.forEach(l -> l.onPong(pong.getPayload()));
 
-            // GENERIC RESPONSE
         } else if (msg instanceof ServerResponsePacket resp) {
             log.info("Response [{}]: {}", resp.getType(), resp.getMessage());
             listeners.forEach(l -> l.onResponse(resp.getType(), resp.getMessage()));
 
-            // LIST RESPONSE
         } else if (msg instanceof ServerListResponsePacket list) {
             log.debug("List {} with {} items", list.getType(),
                     Optional.ofNullable(list.getUsers()).map(List::size)
@@ -110,7 +95,7 @@ public class ConvoClientHandler extends ConvoHandler {
                             .or(() -> Optional.ofNullable(list.getInvites()).map(List::size))
                             .orElse(0)
             );
-            // dispatch by type
+
             switch (list.getType()) {
                 case CONVO_USERS -> {
                     client.getClientApi().setUsers(list.getUsers());
@@ -132,7 +117,6 @@ public class ConvoClientHandler extends ConvoHandler {
                     listeners.forEach(l -> l.onOutgoingFriendInvites(list.getInvites()));
                 }
                 case INCOMING_GROUP_INVITES -> {
-                    // build map
                     Map<String, List<Invite>> inMap = new HashMap<>();
                     for (Invite i : list.getInvites()) {
                         inMap.computeIfAbsent(i.getGroup().getName(), k -> new ArrayList<>()).add(i);
@@ -154,7 +138,6 @@ public class ConvoClientHandler extends ConvoHandler {
                 }
             }
 
-            // UNHANDLED
         } else if (msg instanceof ServerDirectMessagesReponsePacket packet) {
             client.getClientApi().setDirectMessages(packet.getMessages());
             listeners.forEach(l -> l.onDirectMessages(packet.getMessages()));
@@ -182,7 +165,6 @@ public class ConvoClientHandler extends ConvoHandler {
         return connection;
     }
 
-    /** Listener interface for packet-based events */
     public interface Listener {
         default void onConnect(ConvoConnection conn) {}
         default void onDisconnect() {}

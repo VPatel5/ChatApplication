@@ -8,7 +8,6 @@ import me.vpatel.network.api.Message;
 import me.vpatel.network.protocol.client.*;
 import me.vpatel.network.protocol.client.ClientListRequestPacket.ListType;
 import me.vpatel.network.protocol.client.ClientActionPacket.Action;
-import me.vpatel.network.protocol.server.ServerGroupMessagePacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

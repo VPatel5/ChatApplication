@@ -19,7 +19,6 @@ import me.vpatel.network.protocol.server.ServerResponsePacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -47,7 +46,6 @@ public class WebUI extends Application {
         engine = webView.getEngine();
         engine.setOnAlert(evt -> handleCommand(evt.getData()));
 
-        // show login, then index
         engine.load(getClass().getResource("/ui/login.html").toExternalForm());
 
         client.getHandler().addListener(new ConvoClientHandler.Listener() {
@@ -152,68 +150,42 @@ public class WebUI extends Application {
             String action = (String) cmd.get("action");
 
             switch (action) {
-                case "login":
-                    client.getAuthHandler().login(
-                            (String) cmd.get("username"),
-                            (String) cmd.get("password")
-                    );
-                    break;
-
-                case "openRegister":
-                    Platform.runLater(() -> engine.load(getClass().getResource("/ui/register.html").toExternalForm()));
-                    break;
-
-                case "register":
-                    client.getAuthHandler().registerUser(
-                            (String) cmd.get("username"),
-                            (String) cmd.get("password"),
-                            (String) cmd.get("email")
-                    );
-                    break;
-
-                case "openLogin":
-                    Platform.runLater(() -> engine.load(getClass().getResource("/ui/login.html").toExternalForm()));
-                    break;
-
-                case "listFriends":
-                case "searchFriends":
-                    runJS("populateFriends", api.getFriends().stream()
-                            .map(ConvoUser::getName)
-                            .collect(Collectors.toList()));
-                    break;
-
-                case "listGroups":
-                case "searchGroups":
-                    runJS("populateGroups", api.getGroups().stream()
-                            .map(ConvoGroup::getName)
-                            .collect(Collectors.toList()));
-                    break;
-
-                case "createGroup":
-                    api.createGroup((String) cmd.get("groupName"));
-                    break;
-
-                case "getGroupInvites":
-                    runJS("populateGroupInvites", api.getIncomingGroupInvites().entrySet().stream()
-                            .collect(Collectors.toMap(
-                                    Map.Entry::getKey,
-                                    e -> e.getValue().stream()
-                                            .map(inv -> Map.of(
-                                                    "group", e.getKey(),
-                                                    "inviter", inv.getInviter().getName()
-                                            ))
-                                            .collect(Collectors.toList())
-                            )));
-                    break;
-
-                case "inviteToGroup":
-                    api.sendGroupInvite(
-                            currentConversation,
-                            (String) cmd.get("friend")
-                    );
-                    break;
-
-                case "respondGroupInvite": {
+                case "login" -> client.getAuthHandler().login(
+                        (String) cmd.get("username"),
+                        (String) cmd.get("password")
+                );
+                case "openRegister" ->
+                        Platform.runLater(() -> engine.load(getClass().getResource("/ui/register.html").toExternalForm()));
+                case "register" -> client.getAuthHandler().registerUser(
+                        (String) cmd.get("username"),
+                        (String) cmd.get("password"),
+                        (String) cmd.get("email")
+                );
+                case "openLogin" ->
+                        Platform.runLater(() -> engine.load(getClass().getResource("/ui/login.html").toExternalForm()));
+                case "listFriends", "searchFriends" -> runJS("populateFriends", api.getFriends().stream()
+                        .map(ConvoUser::getName)
+                        .collect(Collectors.toList()));
+                case "listGroups", "searchGroups" -> runJS("populateGroups", api.getGroups().stream()
+                        .map(ConvoGroup::getName)
+                        .collect(Collectors.toList()));
+                case "createGroup" -> api.createGroup((String) cmd.get("groupName"));
+                case "getGroupInvites" ->
+                        runJS("populateGroupInvites", api.getIncomingGroupInvites().entrySet().stream()
+                                .collect(Collectors.toMap(
+                                        Map.Entry::getKey,
+                                        e -> e.getValue().stream()
+                                                .map(inv -> Map.of(
+                                                        "group", e.getKey(),
+                                                        "inviter", inv.getInviter().getName()
+                                                ))
+                                                .collect(Collectors.toList())
+                                )));
+                case "inviteToGroup" -> api.sendGroupInvite(
+                        currentConversation,
+                        (String) cmd.get("friend")
+                );
+                case "respondGroupInvite" -> {
                     boolean accept = (Boolean) cmd.get("accept");
                     String grp = (String) cmd.get("group");
                     if (accept) {
@@ -221,10 +193,8 @@ public class WebUI extends Application {
                     } else {
                         api.declineGroupInvite(grp);
                     }
-                    break;
                 }
-
-                case "selectFriend": {
+                case "selectFriend" -> {
                     currentConversation = (String) cmd.get("target");
                     currentType = "friend";
                     List<String> messages = api.getDirectMessages().stream()
@@ -234,15 +204,12 @@ public class WebUI extends Application {
                             .collect(Collectors.toList());
                     runJS("populateDirectMessages", messages);
                     runJS("showFeedback", "Now chatting with " + currentConversation);
-                    break;
                 }
-
-                case "switchToFriendsTab", "switchToGroupsTab":
+                case "switchToFriendsTab", "switchToGroupsTab" -> {
                     currentConversation = null;
                     currentType = null;
-                    break;
-
-                case "selectGroup": {
+                }
+                case "selectGroup" -> {
                     currentConversation = (String) cmd.get("target");
                     currentType = "group";
                     List<String> messages = api.getGroupMessages()
@@ -253,38 +220,21 @@ public class WebUI extends Application {
                             "group", currentConversation,
                             "messages", messages
                     ));
-                    break;
                 }
-
-                case "sendFriendMessage":
-                    api.chat(
-                            (String) cmd.get("target"),
-                            (String) cmd.get("message")
-                    );
-                    break;
-
-                case "sendGroupMessage":
-                    api.groupChat(
-                            (String) cmd.get("target"),
-                            (String) cmd.get("message")
-                    );
-                    break;
-
-                case "removeFriend":
-                    api.removeFriend((String) cmd.get("target"));
-                    break;
-
-                case "sendFriendRequest":
-                    api.sendFriendInvite((String) cmd.get("target"));
-                    break;
-
-                case "getFriendRequests":
-                    runJS("populateFriendRequests", api.getIncomingFriendInvites().stream()
-                            .map(i -> i.getInviter().getName())
-                            .collect(Collectors.toList()));
-                    break;
-
-                case "respondFriendRequest": {
+                case "sendFriendMessage" -> api.chat(
+                        (String) cmd.get("target"),
+                        (String) cmd.get("message")
+                );
+                case "sendGroupMessage" -> api.groupChat(
+                        (String) cmd.get("target"),
+                        (String) cmd.get("message")
+                );
+                case "removeFriend" -> api.removeFriend((String) cmd.get("target"));
+                case "sendFriendRequest" -> api.sendFriendInvite((String) cmd.get("target"));
+                case "getFriendRequests" -> runJS("populateFriendRequests", api.getIncomingFriendInvites().stream()
+                        .map(i -> i.getInviter().getName())
+                        .collect(Collectors.toList()));
+                case "respondFriendRequest" -> {
                     String u = (String) cmd.get("target");
                     boolean accept = (Boolean) cmd.get("accept");
                     if (accept) {
@@ -292,11 +242,8 @@ public class WebUI extends Application {
                     } else {
                         api.declineFriendInvite(u);
                     }
-                    break;
                 }
-
-                default:
-                    log.warn("Unknown action: {}", action);
+                default -> log.warn("Unknown action: {}", action);
             }
         } catch (Exception e) {
             log.error("Error handling command", e);

@@ -1,7 +1,6 @@
 package me.vpatel.client;
 
 import me.vpatel.network.ConvoConnection;
-import me.vpatel.network.api.ConvoUser;
 import me.vpatel.network.protocol.client.ClientEncryptionResponsePacket;
 import me.vpatel.network.protocol.client.ClientLoginStartPacket;
 import me.vpatel.network.protocol.client.ClientRegisterRequestPacket;
@@ -16,7 +15,6 @@ import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.UUID;
 
 public class AuthHandler {
     private static final Logger log = LogManager.getLogger(AuthHandler.class);
