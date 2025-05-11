@@ -36,7 +36,6 @@ public class ClientRegisterRequestPacket extends ConvoPacket {
         email = DataTypes.readString(buf);
     }
 
-    // Getters
     public String getUsername() { return username; }
     public String getPasswordHash() { return passwordHash; }
     public String getSalt() { return salt; }

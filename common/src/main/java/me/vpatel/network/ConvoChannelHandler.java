@@ -19,7 +19,7 @@ public class ConvoChannelHandler extends SimpleChannelInboundHandler<ConvoPacket
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         log.info("[+] Channel connected: {}", ctx.channel().remoteAddress());
 
         this.connection = new ConvoConnection(ctx);
@@ -39,7 +39,7 @@ public class ConvoChannelHandler extends SimpleChannelInboundHandler<ConvoPacket
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if ("Connection reset".equals(cause.getMessage())) {
             log.error("{}: Connection reset.", this.connection.getRemoteAddress());
         } else if ("An established connection was aborted by the software in your host machine".equals(cause.getMessage()) ||
@@ -58,7 +58,7 @@ public class ConvoChannelHandler extends SimpleChannelInboundHandler<ConvoPacket
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, ConvoPacket chatServerPacket) throws Exception {
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, ConvoPacket chatServerPacket) {
 
     }
 

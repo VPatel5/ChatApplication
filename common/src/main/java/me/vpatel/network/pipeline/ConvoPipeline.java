@@ -21,17 +21,9 @@ public class ConvoPipeline extends ChannelInitializer<SocketChannel> {
     }
 
     @Override
-    protected void initChannel(SocketChannel ch) throws Exception {
+    protected void initChannel(SocketChannel ch) {
         ChannelPipeline pipeline = ch.pipeline();
 
-        // --- WebSocket support ---
-//        pipeline.addLast("httpServerCodec", new HttpServerCodec());
-//        pipeline.addLast("httpObjectAggregator", new HttpObjectAggregator(65536));
-//        pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
-//        pipeline.addLast("websocketHandler", new WebSocketServerProtocolHandler("/ws", null, true));
-//        pipeline.addLast("wsFrameAdapter", new ConvoWebSocketHandler(packetRegistry, handler, packetHandler));
-
-        // --- Optional: if you still want to support raw TCP clients ---
          pipeline.addLast("lengthDecoder", new ConvoPacketLengthDecoder());
          pipeline.addLast("decoder", new ConvoPacketDecoder(packetRegistry, packetHandler));
          pipeline.addLast("lengthEncoder", new ConvoPacketLengthEncoder());

@@ -51,6 +51,14 @@ public class ConvoUser {
         this.internalId = internalId;
     }
 
+    public List<ConvoUser> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(List<ConvoUser> friends) {
+        this.friends = friends;
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)

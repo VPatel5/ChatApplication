@@ -4,9 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -14,21 +12,6 @@ import java.util.Arrays;
 
 public class CryptUtil {
     private static final Logger log = LogManager.getLogger(CryptUtil.class);
-
-    public static String genServerHash(SecretKey sharedSecret, PublicKey publicKey) {
-        try {
-            MessageDigest sha = MessageDigest.getInstance("SHA-1");
-            for (byte[] bit : new byte[][]{
-                    new byte[0], sharedSecret.getEncoded(), publicKey.getEncoded()
-            }) {
-                sha.update(bit);
-            }
-            return new BigInteger(sha.digest()).toString(16);
-        } catch (Exception e) {
-            log.warn("Error creating server hash: ", e);
-            return null;
-        }
-    }
 
     public static PublicKey decode(byte[] data) {
         try {

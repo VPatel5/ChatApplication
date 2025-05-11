@@ -6,8 +6,6 @@ import me.vpatel.network.api.MessageType;
 import me.vpatel.network.protocol.ConvoPacket;
 import me.vpatel.network.protocol.DataTypes;
 
-import java.util.UUID;
-
 public class ClientGroupMessagePacket extends ConvoPacket {
 
     private String message;
