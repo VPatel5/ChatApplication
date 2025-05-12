@@ -148,7 +148,7 @@ public class WebUI extends Application {
 
         if (scheduler2 != null) scheduler2.shutdown();
         scheduler2 = Executors.newSingleThreadScheduledExecutor();
-        scheduler2.scheduleAtFixedRate(() -> api.requestDirectMessages(), 0, 1, TimeUnit.SECONDS);
+        scheduler2.scheduleAtFixedRate(api::requestDirectMessages, 0, 1, TimeUnit.SECONDS);
     }
 
     @SuppressWarnings("unchecked")
